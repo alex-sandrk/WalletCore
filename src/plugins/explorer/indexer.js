@@ -11,7 +11,7 @@ const io = require('socket.io-client')
 const pRetry = require('p-retry')
 
 /**
- * Create an object to interact with the Metronome indexer.
+ * Create an object to interact with the Lumerin indexer.
  *
  * @param {object} config The configuration object.
  * @param {object} eventBus The corss-plugin event bus.

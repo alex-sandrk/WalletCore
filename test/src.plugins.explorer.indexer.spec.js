@@ -19,7 +19,7 @@ describe('Indexer', function () {
     nock.cleanAll()
   })
 
-  it('should query the Metronome indexer for transactions', function () {
+  it('should query the Lumerin indexer for transactions', function () {
     const config = {
       chainId: 1,
       indexerUrl: 'http://localhost:3005',

@@ -14,7 +14,7 @@ const burnHashes = new Array(32)
     {}
   )
 
-const MockMetronomeContracts = function () {
+const MockLumerinContracts = function () {
   this.TokenPorter = {
     methods: {
       exportedBurns: seq => ({
@@ -24,8 +24,8 @@ const MockMetronomeContracts = function () {
   }
 }
 
-const porterApi = proxyquire('../src/plugins/metronome/porter-api', {
-  'metronome-contracts': MockMetronomeContracts
+const porterApi = proxyquire('../src/plugins/lumerin/porter-api', {
+  'metronome-contracts': MockLumerinContracts
 })
 
 const getMerkleRoot = porterApi.getMerkleRoot({}, 'chain')

@@ -1,10 +1,10 @@
 'use strict'
 
 const { utils: { hexToUtf8 } } = require('web3')
-const MetronomeContracts = require('metronome-contracts')
+const LumerinContracts = require('metronome-contracts')
 
 const exportMetaParser = ({ returnValues }) => ({
-  metronome: {
+  lumerin: {
     export: {
       blockTimestamp: returnValues.blockTimestamp,
       burnSequence: returnValues.burnSequence,
@@ -25,7 +25,7 @@ const exportMetaParser = ({ returnValues }) => ({
 })
 
 const importRequestMetaParser = ({ returnValues }) => ({
-  metronome: {
+  lumerin: {
     importRequest: {
       currentBurnHash: returnValues.currentBurnHash,
       fee: returnValues.fee,
@@ -37,7 +37,7 @@ const importRequestMetaParser = ({ returnValues }) => ({
 })
 
 const importMetaParser = ({ returnValues }) => ({
-  metronome: {
+  lumerin: {
     import: {
       currentBurnHash: returnValues.currentHash,
       fee: returnValues.fee,
@@ -53,7 +53,7 @@ function getEventDataCreator (chain) {
     abi,
     address: contractAddress,
     birthblock: minBlock
-  } = MetronomeContracts[chain].TokenPorter
+  } = LumerinContracts[chain].TokenPorter
 
   return [
     address => ({

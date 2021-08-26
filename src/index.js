@@ -12,7 +12,7 @@ const pluginCreators = [
   require('./plugins/explorer'),
   require('./plugins/wallet'),
   require('./plugins/tokens'),
-  require('./plugins/metronome')
+  require('./plugins/lumerin')
 ]
 
 function createCore () {

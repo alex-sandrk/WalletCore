@@ -1,6 +1,6 @@
 'use strict'
 
-const MetronomeContracts = require('metronome-contracts')
+const LumerinContracts = require('metronome-contracts')
 
 /**
  * Get the chain hop start time.
@@ -10,7 +10,7 @@ const MetronomeContracts = require('metronome-contracts')
  * @returns {Promise<{chainHopStartTime:object}>} The start time in ms.
  */
 function getChainHopStartTime (web3, chain) {
-  const { TokenPorter } = new MetronomeContracts(web3, chain)
+  const { TokenPorter } = new LumerinContracts(web3, chain)
 
   return TokenPorter.methods
     .chainHopStartTime()

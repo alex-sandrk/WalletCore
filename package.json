@@ -1,22 +1,26 @@
 {
-  "name": "metronome-wallet-core",
-  "version": "3.0.0",
-  "description": "Core logic to develop an Ethereum Metronome wallet",
+  "name": "lumerin-wallet-core",
+  "version": "0.0.0",
+  "author": {
+    "name": "Kodee McIntosh",
+    "email": "kodee@titan.io",
+    "url": "https://titan.io"
+  },
+  "description": "Core logic to develop an Ethereum Lumerin wallet",
   "keywords": [
     "crypto",
     "cryptocurrency",
     "ethereum",
-    "metronome",
+    "lumerin",
     "wallet"
   ],
   "license": "MIT",
-  "author": "Gabriel Montes <gabriel@bloq.com>",
   "files": [
     "patches",
     "src"
   ],
   "main": "src/index.js",
-  "repository": "autonomoussoftware/metronome-wallet-core",
+  "repository": "TitanInd/lumerin-wallet-core",
   "scripts": {
     "check:outdated": "npm-check -i eslint-config-plugin* -i husky",
     "check": "dependency-check . --no-dev --ignore-module patch-package --ignore-module websocket-reconnector",

@@ -3,10 +3,10 @@
 const { MerkleTree } = require('merkletreejs')
 const { utils: { BN, toBN } } = require('web3')
 const crypto = require('crypto')
-const MetronomeContracts = require('metronome-contracts')
+const LumerinContracts = require('metronome-contracts')
 
 function getExportMetFee (web3, chain) {
-  const { TokenPorter } = new MetronomeContracts(web3, chain)
+  const { TokenPorter } = new LumerinContracts(web3, chain)
   return ({ value }) =>
     Promise.all([
       TokenPorter.methods.minimumExportFee().call().then(fee => toBN(fee)),
@@ -26,7 +26,7 @@ function calcMerkleRoot (hashes) {
 }
 
 function getMerkleRoot (web3, chain) {
-  const { TokenPorter } = new MetronomeContracts(web3, chain)
+  const { TokenPorter } = new LumerinContracts(web3, chain)
   return burnSeq =>
     Promise.all(new Array(16).fill()
       .map((_, i) => toBN(burnSeq).subn(i))

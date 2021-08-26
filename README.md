@@ -1,8 +1,8 @@
-# metronome-wallet-core
+# lumerin-wallet-core
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/autonomoussoftware/metronome-wallet-core.svg)](https://greenkeeper.io/)
+[![Greenkeeper badge](https://badges.greenkeeper.io/TitanInd/lumerin-wallet-core.svg)](https://greenkeeper.io/)
 
-Core logic to develop an Ethereum Metronome wallet.
+Core logic to develop an Ethereum Lumerin wallet.
 
 The core logic has a modular design where each module or plugin can emit events and expose methods to other plugins or the code client.
 
@@ -11,7 +11,7 @@ The core logic has a modular design where each module or plugin can emit events 
 Minimum Node version required is v12, v14 is recommended
 
 ```js
-const createCore = require('metronome-wallet-core')
+const createCore = require('lumerin-wallet-core')
 
 const core = createCore()
 
@@ -63,7 +63,7 @@ The following plugins are bundled:
 
 - `eth`: Provides connectivity with the Ethereum node.
 - `explorer`: Provides notifications and keeps track of new blocks, transactions and events.
-- `metronome`: Provides Metronome-specific functionality as interacting with the auctions, converter and token contracts.
+- `lumerin`: Provides Lumerin-specific functionality as interacting with the auctions, converter and token contracts.
 - `rates`: Provides crypto-to-fiat exchange rates.
 - `tokens`: Provides base ERC20 token functions.
 - `wallet`: Provides base key/account management

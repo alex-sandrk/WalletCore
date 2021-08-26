@@ -7,7 +7,7 @@ const {
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const EventEmitter = require('events')
-const MetronomeContracts = require('metronome-contracts')
+const LumerinContracts = require('metronome-contracts')
 const proxyquire = require('proxyquire').noPreserveCache().noCallThru()
 const Web3 = require('web3')
 
@@ -19,7 +19,7 @@ const MockProvider = require('./utils/mock-provider')
 
 const {
   getEventDataCreator
-} = require('../src/plugins/metronome/auction-events')
+} = require('../src/plugins/lumerin/auction-events')
 const {
   getEventDataCreators
 } = require('../src/plugins/tokens/events')
@@ -354,7 +354,7 @@ describe('Explorer plugin', function () {
   describe('refreshAllTransactions', function () {
     it('should start from birthblock', function (done) {
       const chain = 'ropsten'
-      const { birthblock } = MetronomeContracts[chain].Auctions
+      const { birthblock } = LumerinContracts[chain].Auctions
       const latestBlock = birthblock + 10000
 
       let receivedFromBlock

@@ -1,6 +1,6 @@
 'use strict'
 
-const MetronomeContracts = require('metronome-contracts')
+const LumerinContracts = require('metronome-contracts')
 
 function addAccount (web3, privateKey) {
   web3.eth.accounts.wallet.create(0)
@@ -8,7 +8,7 @@ function addAccount (web3, privateKey) {
 }
 
 function buyMet (web3, chain, logTransaction, metaParsers) {
-  const to = MetronomeContracts[chain].Auctions.address
+  const to = LumerinContracts[chain].Auctions.address
   return function (privateKey, { from, value, gas, gasPrice }) {
     addAccount(web3, privateKey)
     return web3.eth.getTransactionCount(from, 'pending')
@@ -23,7 +23,7 @@ function buyMet (web3, chain, logTransaction, metaParsers) {
 }
 
 function estimateAuctionGas (web3, chain) {
-  const to = MetronomeContracts[chain].Auctions.address
+  const to = LumerinContracts[chain].Auctions.address
   return ({ from, value }) => web3.eth.estimateGas({ from, to, value })
 }
 

@@ -1,9 +1,9 @@
 'use strict'
 
-const MetronomeContracts = require('metronome-contracts')
+const LumerinContracts = require('metronome-contracts')
 
 const converterMetaParser = ({ event, returnValues }) => ({
-  metronome: {
+  lumerin: {
     converter: true
   },
   returnedValue: event === 'ConvertMetToEth' ? returnValues.eth : '0'
@@ -14,7 +14,7 @@ function getEventDataCreator (chain) {
     abi,
     address: contractAddress,
     birthblock: minBlock
-  } = MetronomeContracts[chain].AutonomousConverter
+  } = LumerinContracts[chain].AutonomousConverter
 
   return [
     address => ({

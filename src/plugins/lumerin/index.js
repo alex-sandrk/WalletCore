@@ -1,7 +1,7 @@
 'use strict'
 
-const debug = require('debug')('met-wallet:core:metronome')
-const MetronomeContracts = require('metronome-contracts')
+const debug = require('debug')('met-wallet:core:lumerin')
+const LumerinContracts = require('metronome-contracts')
 const Web3 = require('web3')
 
 const {
@@ -37,7 +37,7 @@ const porterEvents = require('./porter-events')
 const validatorEvents = require('./validator-events')
 
 /**
- * Creates an instance of the Metronome plugin.
+ * Creates an instance of the Lumerin plugin.
  *
  * @returns {{start:Function,stop:Function}} The plugin top-level API.
  */
@@ -60,9 +60,9 @@ function createPlugin () {
     const web3 = new Web3(eth.web3Provider)
 
     // Register MET token
-    tokens.registerToken(MetronomeContracts[chainId].METToken.address, {
+    tokens.registerToken(LumerinContracts[chainId].METToken.address, {
       decimals: 18,
-      name: 'Metronome',
+      name: 'Lumerin',
       symbol: 'MET'
     })
 
@@ -76,7 +76,7 @@ function createPlugin () {
       .forEach(explorer.registerEvent)
 
     // Start emitting MET status
-    const emitMetronomeStatus = () =>
+    const emitLumerinStatus = () =>
       Promise.all([
         getAuctionStatus(web3, chainId)
           .then(function (status) {
@@ -98,14 +98,14 @@ function createPlugin () {
         .catch(function (err) {
           eventBus.emit('wallet-error', {
             inner: err,
-            message: 'Metronome status could not be retrieved',
-            meta: { plugin: 'metronome' }
+            message: 'Lumerin status could not be retrieved',
+            meta: { plugin: 'lumerin' }
           })
         })
 
-    emitMetronomeStatus()
+    emitLumerinStatus()
 
-    eventBus.on('coin-block', emitMetronomeStatus)
+    eventBus.on('coin-block', emitLumerinStatus)
 
     // Collect meta parsers
     const metaParsers = Object.assign(
@@ -129,7 +129,7 @@ function createPlugin () {
     // Build and return API
     return {
       api: {
-        buyMetronome: buyMet(
+        buyLumerin: buyMet(
           web3,
           chainId,
           explorer.logTransaction,
@@ -182,7 +182,7 @@ function createPlugin () {
         'converter-status-updated',
         'wallet-error'
       ],
-      name: 'metronome'
+      name: 'lumerin'
     }
   }
 

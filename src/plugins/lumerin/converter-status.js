@@ -1,13 +1,13 @@
 'use strict'
 
-const createMetronomeStatus = require('metronome-sdk-status')
-const MetronomeContracts = require('metronome-contracts')
+const createLumerinStatus = require('metronome-sdk-status')
+const LumerinContracts = require('metronome-contracts')
 
 function getConverterStatus (web3, chain) {
-  const contracts = new MetronomeContracts(web3, chain)
-  const metronomeStatus = createMetronomeStatus(contracts)
+  const contracts = new LumerinContracts(web3, chain)
+  const lumerinStatus = createLumerinStatus(contracts)
 
-  return metronomeStatus
+  return lumerinStatus
     .getConverterStatus()
     .then(({ currentConverterPrice, coinBalance, metBalance }) => ({
       availableMet: metBalance,

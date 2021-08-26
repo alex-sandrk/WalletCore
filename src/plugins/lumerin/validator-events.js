@@ -1,9 +1,9 @@
 'use strict'
 
-const MetronomeContracts = require('metronome-contracts')
+const LumerinContracts = require('metronome-contracts')
 
 const attestationMetaParser = ({ returnValues }) => ({
-  metronome: {
+  lumerin: {
     attestation: {
       currentBurnHash: returnValues.hash,
       isValid: returnValues.isValid
@@ -16,7 +16,7 @@ function getEventDataCreator (chain) {
     abi,
     address: contractAddress,
     birthblock: minBlock
-  } = MetronomeContracts[chain].Validator
+  } = LumerinContracts[chain].Validator
 
   return [
     address => ({

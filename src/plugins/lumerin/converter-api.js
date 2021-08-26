@@ -1,31 +1,31 @@
 'use strict'
 
-const MetronomeContracts = require('metronome-contracts')
+const LumerinContracts = require('metronome-contracts')
 const { utils: { toBN } } = require('web3')
 
 function estimateCoinToMetGas (web3, chain) {
-  const { AutonomousConverter } = new MetronomeContracts(web3, chain)
+  const { AutonomousConverter } = new LumerinContracts(web3, chain)
   return ({ from, value, minReturn = '1' }) =>
     AutonomousConverter.methods.convertEthToMet(minReturn)
       .estimateGas({ from, value })
 }
 
 function estimateMetToCoinGas (web3, chain) {
-  const { AutonomousConverter } = new MetronomeContracts(web3, chain)
+  const { AutonomousConverter } = new LumerinContracts(web3, chain)
   return ({ from, value, minReturn = '1' }) =>
     AutonomousConverter.methods.convertMetToEth(value, minReturn)
       .estimateGas({ from })
 }
 
 function getCoinToMetEstimate (web3, chain) {
-  const { AutonomousConverter } = new MetronomeContracts(web3, chain)
+  const { AutonomousConverter } = new LumerinContracts(web3, chain)
   return ({ value }) =>
     AutonomousConverter.methods.getMetForEthResult(value).call()
       .then(result => ({ result }))
 }
 
 function getMetToMetEstimate (web3, chain) {
-  const { AutonomousConverter } = new MetronomeContracts(web3, chain)
+  const { AutonomousConverter } = new LumerinContracts(web3, chain)
   return ({ value }) =>
     AutonomousConverter.methods.getEthForMetResult(value).call()
       .then(result => ({ result }))
@@ -37,7 +37,7 @@ function addAccount (web3, privateKey) {
 }
 
 function convertCoin (web3, chain, logTransaction, metaParsers) {
-  const { AutonomousConverter } = new MetronomeContracts(web3, chain)
+  const { AutonomousConverter } = new LumerinContracts(web3, chain)
 
   return function (privateKey, transactionObject) {
     const { gasPrice, gas, value, from, minReturn = 1 } = transactionObject
@@ -57,7 +57,7 @@ function convertCoin (web3, chain, logTransaction, metaParsers) {
 }
 
 function convertMet (web3, chain, logTransaction, metaParsers) {
-  const { AutonomousConverter, METToken } = new MetronomeContracts(web3, chain)
+  const { AutonomousConverter, METToken } = new LumerinContracts(web3, chain)
 
   const converterAddress = AutonomousConverter.options.address
   const metTokenAddress = METToken.options.address

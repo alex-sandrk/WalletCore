@@ -1,12 +1,12 @@
 'use strict'
 
 const { utils: { toHex } } = require('web3')
-const MetronomeContracts = require('metronome-contracts')
+const LumerinContracts = require('metronome-contracts')
 
 const { getExportMetFee } = require('./porter-api')
 
 function estimateExportMetGas (web3, chain) {
-  const { METToken } = new MetronomeContracts(web3, chain)
+  const { METToken } = new LumerinContracts(web3, chain)
   return function (params) {
     const {
       destinationChain,
@@ -29,7 +29,7 @@ function estimateExportMetGas (web3, chain) {
 }
 
 function estimateImportMetGas (web3, chain) {
-  const { Auctions, METToken } = new MetronomeContracts(web3, chain)
+  const { Auctions, METToken } = new LumerinContracts(web3, chain)
   return function (params) {
     const {
       blockTimestamp,
@@ -83,7 +83,7 @@ const getNextNonce = (web3, from) =>
   web3.eth.getTransactionCount(from, 'pending')
 
 function sendMet (web3, chain, logTransaction, metaParsers) {
-  const { METToken } = new MetronomeContracts(web3, chain)
+  const { METToken } = new LumerinContracts(web3, chain)
   return function (privateKey, { gasPrice, gas, from, to, value }) {
     addAccount(web3, privateKey)
     return getNextNonce(web3, from)
@@ -102,7 +102,7 @@ function sendMet (web3, chain, logTransaction, metaParsers) {
 }
 
 function exportMet (web3, chain, logTransaction, metaParsers) {
-  const { METToken } = new MetronomeContracts(web3, chain)
+  const { METToken } = new LumerinContracts(web3, chain)
   return function (privateKey, params) {
     const {
       destinationChain,
@@ -146,7 +146,7 @@ function exportMet (web3, chain, logTransaction, metaParsers) {
 }
 
 function importMet (web3, chain, logTransaction, metaParsers) {
-  const { Auctions, METToken } = new MetronomeContracts(web3, chain)
+  const { Auctions, METToken } = new LumerinContracts(web3, chain)
   return function (privateKey, params) {
     const {
       blockTimestamp,
