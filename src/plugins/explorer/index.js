@@ -1,16 +1,18 @@
-'use strict'
+'use strict';
 
-const debug = require('debug')('met-wallet:core:explorer')
-const Web3 = require('web3')
+const debug = require('debug')('met-wallet:core:explorer');
+const Web3 = require('web3');
 
-const createEventsRegistry = require('./events')
-const createIndexer = require('./indexer')
-const createLogTransaction = require('./log-transaction')
-const createQueue = require('./queue')
-const createStream = require('./blocks-stream')
-const createTransactionSyncer = require('./sync-transactions')
-const refreshTransaction = require('./refresh-transactions')
-const tryParseEventLog = require('./parse-log')
+const createEventsRegistry = require('./events');
+const createIndexer = require('./indexer');
+const createLogTransaction = require('./log-transaction');
+const createQueue = require('./queue');
+const createStream = require('./blocks-stream');
+const createTransactionSyncer = require('./sync-transactions');
+const refreshTransaction = require('./refresh-transactions');
+const refreshSockets = require('./refresh-sockets');
+const refreshContracts = require('./refresh-contracts');
+const tryParseEventLog = require('./parse-log');
 
 function createPlugin () {
   let blocksStream
@@ -56,6 +58,8 @@ function createPlugin () {
         logTransaction: createLogTransaction(queue),
         refreshAllTransactions: syncer.refreshAllTransactions,
         refreshTransaction: refreshTransaction(web3, eventsRegistry, queue),
+        refreshSockets: refreshSockets(),
+        refreshContracts: refreshContracts(),
         registerEvent: eventsRegistry.register,
         syncTransactions: syncer.syncTransactions,
         tryParseEventLog: tryParseEventLog(web3, eventsRegistry)

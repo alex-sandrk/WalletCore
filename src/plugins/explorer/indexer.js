@@ -1,14 +1,14 @@
 'use strict'
 
-const { CookieJar } = require('tough-cookie')
-const { create: createAxios } = require('axios')
-const { default: axiosCookieJarSupport } = require('axios-cookiejar-support')
-const { isArrayLike } = require('lodash')
-const blockscout = require('./blockscout')
-const debug = require('debug')('met-wallet:core:explorer:indexer')
-const EventEmitter = require('events')
-const io = require('socket.io-client')
-const pRetry = require('p-retry')
+const { CookieJar } = require('tough-cookie');
+const { create: createAxios } = require('axios');
+const { default: axiosCookieJarSupport } = require('axios-cookiejar-support');
+const { isArrayLike } = require('lodash');
+const blockscout = require('./blockscout');
+const debug = require('debug')('met-wallet:core:explorer:indexer');
+const EventEmitter = require('events');
+const io = require('socket.io-client');
+const pRetry = require('p-retry');
 
 /**
  * Create an object to interact with the Lumerin indexer.
@@ -18,25 +18,25 @@ const pRetry = require('p-retry')
  * @returns {object} The exposed indexer API.
  */
 function createIndexer (config, eventBus) {
-  const { chainId, debug: enableDebug, indexerUrl, useNativeCookieJar } = config
+  const { chainId, debug: enableDebug, indexerUrl, useNativeCookieJar } = config;
 
-  debug.enabled = enableDebug
+  debug.enabled = enableDebug;
 
-  let axios
-  let jar
-  let socket
+  let axios;
+  let jar;
+  let socket;
 
   if (useNativeCookieJar) {
     axios = createAxios({
       baseURL: indexerUrl
-    })
+    });
   } else {
-    jar = new CookieJar()
+    jar = new CookieJar();
     axios = axiosCookieJarSupport(createAxios(({
       baseURL: indexerUrl,
       withCredentials: true
-    })))
-    axios.defaults.jar = jar
+    })));
+    axios.defaults.jar = jar;
   }
 
   const getBestBlock = () =>
@@ -46,7 +46,7 @@ function createIndexer (config, eventBus) {
         best && best.number && best.hash
           ? best
           : new Error('Indexer\' response is invalid for best block')
-      )
+      );
 
   const getTransactions = (from, to, address) =>
     chainId === 61 // Ethereum Classic Mainnet chain ID
@@ -57,7 +57,7 @@ function createIndexer (config, eventBus) {
           isArrayLike(transactions)
             ? transactions
             : new Error(`Indexer response is invalid for ${address}`)
-        )
+        );
 
   const getCookiePromise = useNativeCookieJar
     ? Promise.resolve()
@@ -74,7 +74,7 @@ function createIndexer (config, eventBus) {
           debug('Failed to get indexer cookie', err.message)
         }
       }
-    )
+    );
 
   const getSocket = () =>
     io(`${indexerUrl}/v1`, {
@@ -82,7 +82,7 @@ function createIndexer (config, eventBus) {
       extraHeaders: jar
         ? { Cookie: jar.getCookiesSync(indexerUrl).join(';') }
         : {}
-    })
+    });
 
   /**
    * Create a stream that will emit an event each time a transaction for the
@@ -96,17 +96,17 @@ function createIndexer (config, eventBus) {
    * @returns {object} The event emitter.
    */
   function getTransactionStream (address) {
-    const stream = new EventEmitter()
+    const stream = new EventEmitter();
 
     getCookiePromise
       .then(function () {
-        socket = getSocket()
+        socket = getSocket();
 
         socket.on('connect', function () {
-          debug('Indexer connected')
+          debug('Indexer connected');
           eventBus.emit('indexer-connection-status-changed', {
             connected: true
-          })
+          });
           socket.emit(
             'subscribe',
             { type: 'txs', addresses: [address] },
@@ -116,49 +116,49 @@ function createIndexer (config, eventBus) {
               }
             }
           )
-        })
+        });
 
         socket.on('tx', function (data) {
           if (!data) {
-            stream.emit('error', new Error('Indexer sent no tx event data'))
-            return
+            stream.emit('error', new Error('Indexer sent no tx event data'));
+            return;
           }
 
-          const { type, txid } = data
+          const { type, txid } = data;
 
           if (type === 'eth') {
             if (typeof txid !== 'string' || txid.length !== 66) {
-              stream.emit('error', new Error('Indexer sent bad tx event data'))
-              return
+              stream.emit('error', new Error('Indexer sent bad tx event data'));
+              return;
             }
 
-            stream.emit('data', txid)
+            stream.emit('data', txid);
           }
-        })
+        });
 
         socket.on('disconnect', function (reason) {
-          debug('Indexer disconnected')
+          debug('Indexer disconnected');
           eventBus.emit('indexer-connection-status-changed', {
             connected: false
-          })
-          stream.emit('error', new Error(`Indexer disconnected with ${reason}`))
+          });
+          stream.emit('error', new Error(`Indexer disconnected with ${reason}`));
         })
 
         socket.on('reconnect', function () {
-          stream.emit('resync')
-        })
+          stream.emit('resync');
+        });
 
         socket.on('error', function (err) {
-          stream.emit('error', err)
-        })
+          stream.emit('error', err);
+        });
 
-        socket.open()
+        socket.open();
       })
       .catch(function (err) {
-        stream.emit('error', err)
-      })
+        stream.emit('error', err);
+      });
 
-    return stream
+    return stream;
   }
 
   /**
@@ -166,7 +166,7 @@ function createIndexer (config, eventBus) {
    */
   function disconnect () {
     if (socket) {
-      socket.close()
+      socket.close();
     }
   }
 
@@ -175,7 +175,7 @@ function createIndexer (config, eventBus) {
     getBestBlock,
     getTransactions,
     getTransactionStream
-  }
+  };
 }
 
-module.exports = createIndexer
+module.exports = createIndexer;
