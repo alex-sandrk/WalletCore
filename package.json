@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "author": {
     "name": "Kodee McIntosh",
-    "email": "kodee@titan.io",
-    "url": "https://titan.io"
+    "email": "kodee@lumerin.io",
+    "url": "https://lumerin.io"
   },
   "description": "Core logic to develop an Ethereum Lumerin wallet",
   "keywords": [
@@ -20,7 +20,7 @@
     "src"
   ],
   "main": "src/index.js",
-  "repository": "TitanInd/lumerin-wallet-core",
+  "repository": "https://github.com/Lumerin-protocol/lumerin-wallet-core",
   "scripts": {
     "check": "dependency-check . --no-dev --ignore-module patch-package --ignore-module websocket-reconnector",
     "lint": "",

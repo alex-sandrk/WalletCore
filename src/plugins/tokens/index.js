@@ -1,56 +1,56 @@
 'use strict'
 
-const { utils: { isAddress, toChecksumAddress } } = require('web3')
-const debug = require('debug')('met-wallet:core:tokens')
-const Web3 = require('web3')
+const { utils: { isAddress, toChecksumAddress } } = require('web3');
+const debug = require('debug')('lmr-wallet:core:tokens');
+const Web3 = require('web3');
 
-const abi = require('./erc20-abi.json')
-const events = require('./events')
+const abi = require('./erc20-abi.json');
+const events = require('./events');
 
 function createPlugin () {
-  const tokens = []
+  const tokens = [];
 
   const registerToken = ({ explorer }) =>
     function (contractAddress, meta) {
-      debug('Registering token', contractAddress, meta)
+      debug('Registering token', contractAddress, meta);
 
       if (!isAddress(contractAddress)) {
-        return false
+        return false;
       }
 
-      const checksumAddress = toChecksumAddress(contractAddress)
+      const checksumAddress = toChecksumAddress(contractAddress);
 
       if (tokens.find(t => t.address === checksumAddress)) {
-        return false
+        return false;
       }
 
-      tokens.push({ contractAddress: checksumAddress, meta })
+      tokens.push({ contractAddress: checksumAddress, meta });
 
       events.getEventDataCreators(checksumAddress)
-        .forEach(explorer.registerEvent)
+        .forEach(explorer.registerEvent);
 
-      return true
+      return true;
     }
 
   function getTokenBalance (web3, contractAddress, address) {
-    const contract = new web3.eth.Contract(abi, contractAddress)
-    return contract.methods.balanceOf(address).call()
+    const contract = new web3.eth.Contract(abi, contractAddress);
+    return contract.methods.balanceOf(address).call();
   }
 
   const getTokensGasLimit = web3 =>
     function ({ token: contractAddress, to, from, value }) {
-      const contract = new web3.eth.Contract(abi, contractAddress)
+      const contract = new web3.eth.Contract(abi, contractAddress);
       return contract.methods.transfer(to, value).estimateGas({ from })
-        .then(gasLimit => ({ gasLimit }))
+        .then(gasLimit => ({ gasLimit }));
     }
 
-  let accountAddress
-  let walletId
+  let accountAddress;
+  let walletId;
 
   function start ({ config, eventBus, plugins }) {
-    debug.enabled = config.debug
+    debug.enabled = config.debug;
 
-    const web3 = new Web3(plugins.eth.web3Provider)
+    const web3 = new Web3(plugins.eth.web3Provider);
 
     function emitBalances (address) {
       tokens.forEach(function ({ contractAddress, meta: { symbol } }) {
@@ -76,23 +76,23 @@ function createPlugin () {
               inner: err,
               message: `Could not get ${symbol} token balance`,
               meta: { plugin: 'tokens' }
-            })
-          })
-      })
+            });
+          });
+      });
     }
 
     eventBus.on('open-wallets', function ({ address, activeWallet }) {
-      accountAddress = address
-      walletId = activeWallet
+      accountAddress = address;
+      walletId = activeWallet;
 
-      emitBalances(address)
-    })
+      emitBalances(address);
+    });
 
     eventBus.on('coin-tx', function () {
       if (accountAddress && walletId) {
-        emitBalances(accountAddress)
+        emitBalances(accountAddress);
       }
-    })
+    });
 
     return {
       api: {
@@ -107,14 +107,14 @@ function createPlugin () {
         'wallet-error'
       ],
       name: 'tokens'
-    }
+    };
   }
 
   function stop () {
-    accountAddress = null
+    accountAddress = null;
   }
 
-  return { start, stop }
+  return { start, stop };
 }
 
-module.exports = createPlugin
+module.exports = createPlugin;

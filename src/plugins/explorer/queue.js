@@ -1,40 +1,40 @@
-'use strict'
+'use strict';
 
-const { debounce, groupBy, merge, noop, reduce } = require('lodash')
-const debug = require('debug')('met-wallet:core:explorer:queue')
-const getTransactionStatus = require('./transaction-status')
-const promiseAllProps = require('promise-all-props')
+const { debounce, groupBy, merge, noop, reduce } = require('lodash');
+const debug = require('debug')('lmr-wallet:core:explorer:queue');
+const getTransactionStatus = require('./transaction-status');
+const promiseAllProps = require('promise-all-props');
 
 function createQueue (config, eventBus, web3) {
-  debug.enabled = config.debug
+  debug.enabled = config.debug;
 
-  const metasCache = {}
+  const metasCache = {};
 
-  let pendingEvents = []
-  let walletId
+  let pendingEvents = [];
+  let walletId;
 
   function mergeEvents (hash, events) {
-    const metas = events.map(({ event, metaParser }) => metaParser(event))
+    const metas = events.map(({ event, metaParser }) => metaParser(event));
 
-    metas.unshift(metasCache[hash] || {})
+    metas.unshift(metasCache[hash] || {});
 
-    metasCache[hash] = reduce(metas, merge)
+    metasCache[hash] = reduce(metas, merge);
 
-    return metasCache[hash]
+    return metasCache[hash];
   }
 
-  const mergeDones = events => events.map(event => event.done || noop)
+  const mergeDones = events => events.map(event => event.done || noop);
 
   function fillInStatus ({ transaction, receipt, meta }) {
     if (receipt && meta) {
-      meta.contractCallFailed = !getTransactionStatus(transaction, receipt)
+      meta.contractCallFailed = !getTransactionStatus(transaction, receipt);
     }
-    return { transaction, receipt, meta }
+    return { transaction, receipt, meta };
   }
 
   function emitTransactions (address, transactions) {
     if (!walletId) {
-      throw new Error('Wallet ID not set')
+      throw new Error('Wallet ID not set');
     }
 
     eventBus.emit('wallet-state-changed', {
@@ -47,27 +47,27 @@ function createQueue (config, eventBus, web3) {
           }
         }
       }
-    })
-    eventBus.emit('coin-tx')
+    });
+    eventBus.emit('coin-tx');
   }
 
   function tryEmitTransactions (address, transactions) {
     try {
-      emitTransactions(address, transactions)
-      return null
+      emitTransactions(address, transactions);
+      return null;
     } catch (err) {
-      return err
+      return err;
     }
   }
 
   function emitPendingEvents (address) {
-    debug('About to emit pending events')
+    debug('About to emit pending events');
 
-    const eventsToEmit = pendingEvents.filter(e => e.address === address)
-    const eventsToKeep = pendingEvents.filter(e => e.address !== address)
-    pendingEvents = eventsToKeep
+    const eventsToEmit = pendingEvents.filter(e => e.address === address);
+    const eventsToKeep = pendingEvents.filter(e => e.address !== address);
+    pendingEvents = eventsToKeep;
 
-    const grouped = (groupBy(eventsToEmit, 'event.transactionHash'))
+    const grouped = (groupBy(eventsToEmit, 'event.transactionHash'));
 
     Promise.all(Object.keys(grouped).map(hash => promiseAllProps({
       transaction: web3.eth.getTransaction(hash),
@@ -76,33 +76,33 @@ function createQueue (config, eventBus, web3) {
       done: mergeDones(grouped[hash])
     })))
       .then(function (transactions) {
-        const err = tryEmitTransactions(address, transactions)
+        const err = tryEmitTransactions(address, transactions);
         return Promise.all(transactions.map(transaction =>
           Promise.all(transaction.done.map(done =>
             done(err)
           ))
-        ))
+        ));
       })
       .catch(function (err) {
         eventBus.emit('wallet-error', {
           inner: err,
           message: 'Could not emit event transaction',
           meta: { plugin: 'explorer' }
-        })
+        });
         eventsToEmit.forEach(function (event) {
-          event.done(err)
+          event.done(err);
         })
-      })
+      });
   }
 
   const debouncedEmitPendingEvents = debounce(
     emitPendingEvents,
     config.explorerDebounce
-  )
+  );
 
   const addTransaction = (address, meta) =>
     function (hash) {
-      debug('Queueing transaction', hash)
+      debug('Queueing transaction', hash);
 
       return new Promise(function (resolve, reject) {
         const event = {
@@ -110,19 +110,19 @@ function createQueue (config, eventBus, web3) {
           event: { transactionHash: hash },
           metaParser: () => (meta || {}),
           done: err => err ? reject(err) : resolve()
-        }
-        pendingEvents.push(event)
+        };
+        pendingEvents.push(event);
   
-        debouncedEmitPendingEvents(address)
-      })
-    }
+        debouncedEmitPendingEvents(address);
+      });
+    };
 
   eventBus.on('open-wallets', function ({ activeWallet }) {
-    walletId = activeWallet
-  })
+    walletId = activeWallet;
+  });
 
   const addEvent = (address, metaParser) => function (event) {
-    debug('Queueing event', event.event)
+    debug('Queueing event', event.event);
     return new Promise(function (resolve, reject) {
       pendingEvents.push({
         address,
@@ -131,13 +131,13 @@ function createQueue (config, eventBus, web3) {
         metaParser,
       })
       debouncedEmitPendingEvents(address)
-    })
-  }
+    });
+  };
 
   return {
     addEvent,
     addTransaction
-  }
+  };
 }
 
-module.exports = createQueue
+module.exports = createQueue;

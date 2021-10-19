@@ -1,35 +1,37 @@
 'use strict'
 
 const { utils: { toHex } } = require('web3')
-const LumerinContracts = require('metronome-contracts')
+// const LumerinContracts = require('metronome-contracts')
+const LumerinContracts = require('lumerin-contracts')
 
-const { getExportMetFee } = require('./porter-api')
+// const { getExportMetFee } = require('./porter-api')
 
-function estimateExportMetGas (web3, chain) {
-  const { METToken } = new LumerinContracts(web3, chain)
+function estimateExportLmrGas (web3, chain) {
+  const { LMRToken } = new LumerinContracts(web3, chain);
   return function (params) {
     const {
       destinationChain,
-      destinationMetAddress,
+      destinationLmrAddress,
       extraData,
       fee,
       from,
       to,
       value
-    } = params
-    return METToken.methods.export(
+    } = params;
+
+    return LMRToken.methods.export(
       toHex(destinationChain),
-      destinationMetAddress,
+      destinationLmrAddress,
       to || from,
       value,
       fee,
       extraData
-    ).estimateGas({ from })
+    ).estimateGas({ from });
   }
 }
 
-function estimateImportMetGas (web3, chain) {
-  const { Auctions, METToken } = new LumerinContracts(web3, chain)
+function estimateImportLmrGas (web3, chain) {
+  const { LMRToken } = new LumerinContracts(web3, chain);
   return function (params) {
     const {
       blockTimestamp,
@@ -38,7 +40,7 @@ function estimateImportMetGas (web3, chain) {
       currentTick,
       dailyMintable,
       destinationChain,
-      destinationMetAddress,
+      destinationLmrAddress,
       extraData,
       fee,
       from,
@@ -47,53 +49,48 @@ function estimateImportMetGas (web3, chain) {
       supply,
       root,
       value
-    } = params
-    return Promise.all([
-      Auctions.methods.genesisTime().call(),
-      Auctions.methods.dailyAuctionStartTime().call()
-    ]).then(([genesisTime, dailyAuctionStartTime]) =>
-      METToken.methods.importMET(
-        toHex(originChain),
-        toHex(destinationChain),
-        [destinationMetAddress, from],
-        extraData,
-        [previousBurnHash, currentBurnHash],
-        supply,
-        [
-          blockTimestamp,
-          value,
-          fee,
-          currentTick,
-          genesisTime,
-          dailyMintable,
-          burnSequence,
-          dailyAuctionStartTime
-        ],
-        root
-      ).estimateGas({ from }))
+    } = params;
+
+    return LMRToken.methods.importLMR(
+      toHex(originChain),
+      toHex(destinationChain),
+      [destinationLmrAddress, from],
+      extraData,
+      [previousBurnHash, currentBurnHash],
+      supply,
+      [
+        blockTimestamp,
+        value,
+        fee,
+        currentTick,
+        dailyMintable,
+        burnSequence
+      ],
+      root
+    ).estimateGas({ from });
   }
 }
 
 function addAccount (web3, privateKey) {
   web3.eth.accounts.wallet.create(0)
-    .add(web3.eth.accounts.privateKeyToAccount(privateKey))
+    .add(web3.eth.accounts.privateKeyToAccount(privateKey));
 }
 
 const getNextNonce = (web3, from) =>
   web3.eth.getTransactionCount(from, 'pending')
 
-function sendMet (web3, chain, logTransaction, metaParsers) {
-  const { METToken } = new LumerinContracts(web3, chain)
+function sendLmr (web3, chain, logTransaction, metaParsers) {
+  const { LMRToken } = new LumerinContracts(web3, chain)
   return function (privateKey, { gasPrice, gas, from, to, value }) {
     addAccount(web3, privateKey)
     return getNextNonce(web3, from)
       .then(nonce =>
         logTransaction(
-          METToken.methods.transfer(to, value)
+          LMRToken.methods.transfer(to, value)
             .send({ from, gasPrice, gas, nonce }),
           from,
           metaParsers.transfer({
-            address: METToken.options.address,
+            address: LMRToken.options.address,
             returnValues: { _from: from, _to: to, _value: value }
           })
         )
@@ -101,12 +98,12 @@ function sendMet (web3, chain, logTransaction, metaParsers) {
   }
 }
 
-function exportMet (web3, chain, logTransaction, metaParsers) {
-  const { METToken } = new LumerinContracts(web3, chain)
+function exportLmr (web3, chain, logTransaction, metaParsers) {
+  const { LMRToken } = new LumerinContracts(web3, chain)
   return function (privateKey, params) {
     const {
       destinationChain,
-      destinationMetAddress,
+      destinationLmrAddress,
       extraData,
       fee,
       from,
@@ -114,17 +111,19 @@ function exportMet (web3, chain, logTransaction, metaParsers) {
       gasPrice,
       to,
       value
-    } = params
-    addAccount(web3, privateKey)
+    } = params;
+    addAccount(web3, privateKey);
+
     return Promise.all([
       getNextNonce(web3, from),
-      fee || getExportMetFee(web3, chain)({ value })
+      // fee || getExportLmrFee(web3, chain)({ value })
+      fee
     ])
       .then(([nonce, actualFee]) =>
         logTransaction(
-          METToken.methods.export(
+          LMRToken.methods.export(
             toHex(destinationChain),
-            destinationMetAddress,
+            destinationLmrAddress,
             to || from,
             value,
             actualFee,
@@ -145,8 +144,8 @@ function exportMet (web3, chain, logTransaction, metaParsers) {
   }
 }
 
-function importMet (web3, chain, logTransaction, metaParsers) {
-  const { Auctions, METToken } = new LumerinContracts(web3, chain)
+function importLmr (web3, chain, logTransaction, metaParsers) {
+  const { LMRToken } = new LumerinContracts(web3, chain);
   return function (privateKey, params) {
     const {
       blockTimestamp,
@@ -155,7 +154,7 @@ function importMet (web3, chain, logTransaction, metaParsers) {
       currentTick,
       dailyMintable,
       destinationChain,
-      destinationMetAddress,
+      destinationLmrAddress,
       extraData,
       fee,
       from,
@@ -166,20 +165,18 @@ function importMet (web3, chain, logTransaction, metaParsers) {
       supply,
       root,
       value
-    } = params
-    addAccount(web3, privateKey)
+    } = params;
+    addAccount(web3, privateKey);
 
     return Promise.all([
-      getNextNonce(web3, from),
-      Auctions.methods.genesisTime().call(),
-      Auctions.methods.dailyAuctionStartTime().call()
+      getNextNonce(web3, from)
     ])
-      .then(([nonce, genesisTime, dailyAuctionStartTime]) =>
+      .then(([nonce]) =>
         logTransaction(
-          METToken.methods.importMET(
+          LMRToken.methods.importLMR(
             toHex(originChain),
             toHex(destinationChain),
-            [destinationMetAddress, from],
+            [destinationLmrAddress, from],
             extraData,
             [previousBurnHash, currentBurnHash],
             supply,
@@ -188,10 +185,8 @@ function importMet (web3, chain, logTransaction, metaParsers) {
               value,
               fee,
               currentTick,
-              genesisTime,
               dailyMintable,
-              burnSequence,
-              dailyAuctionStartTime
+              burnSequence
             ],
             root
           ).send({ from, gasPrice, gas, nonce }),
@@ -211,9 +206,9 @@ function importMet (web3, chain, logTransaction, metaParsers) {
 }
 
 module.exports = {
-  estimateExportMetGas,
-  estimateImportMetGas,
-  exportMet,
-  importMet,
-  sendMet
+  estimateExportLmrGas,
+  estimateImportLmrGas,
+  exportLmr,
+  importLmr,
+  sendLmr
 }

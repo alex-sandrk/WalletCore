@@ -1,6 +1,6 @@
-'use strict'
+'use strict';
 
-const { isMatch, isNumber } = require('lodash')
+const { isMatch, isNumber } = require('lodash');
 
 
 // Make sockets refresh call here

@@ -1,6 +1,7 @@
-'use strict'
+'use strict';
 
-const LumerinContracts = require('metronome-contracts')
+// const LumerinContracts = require('metronome-contracts');
+const LumerinContracts = require('lumerin-contracts');
 
 /**
  * Get the chain hop start time.
@@ -9,15 +10,15 @@ const LumerinContracts = require('metronome-contracts')
  * @param {string} chain The chain name.
  * @returns {Promise<{chainHopStartTime:object}>} The start time in ms.
  */
-function getChainHopStartTime (web3, chain) {
-  const { TokenPorter } = new LumerinContracts(web3, chain)
+// function getChainHopStartTime (web3, chain) {
+//   const { TokenPorter } = new LumerinContracts(web3, chain)
 
-  return TokenPorter.methods
-    .chainHopStartTime()
-    .call()
-    .then(chainHopStartTime => ({
-      chainHopStartTime: Number.parseInt(chainHopStartTime, 10) * 1000
-    }))
-}
+//   return TokenPorter.methods
+//     .chainHopStartTime()
+//     .call()
+//     .then(chainHopStartTime => ({
+//       chainHopStartTime: Number.parseInt(chainHopStartTime, 10) * 1000
+//     }))
+// }
 
-module.exports = getChainHopStartTime
+// module.exports = getChainHopStartTime;

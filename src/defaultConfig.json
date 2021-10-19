@@ -1,5 +1,5 @@
 {
-  "chainId": 3,
+  "chainId": "1337",
   "debug": false,
   "displayName": "Local",
   "explorerDebounce": 2000,

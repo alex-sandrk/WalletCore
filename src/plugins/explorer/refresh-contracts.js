@@ -1,6 +1,6 @@
-'use strict'
+'use strict';
 
-const { isMatch, isNumber } = require('lodash')
+const { isMatch, isNumber } = require('lodash');
 
 
 // Make smart contract refresh call here

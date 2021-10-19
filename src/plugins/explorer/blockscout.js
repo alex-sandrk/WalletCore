@@ -1,6 +1,6 @@
-'use strict'
+'use strict';
 
-const axios = require('axios').default
+const axios = require('axios').default;
 
 /**
  *
@@ -23,10 +23,10 @@ function getTransactions (address, startblock, endblock) {
     }
   }).then(function ({ data }) {
     if (data.status !== '1' && data.message !== 'No transactions found') {
-      return Promise.reject(new Error(data.message))
+      return Promise.reject(new Error(data.message));
     }
-    return data.result.map(t => t.hash)
-  })
+    return data.result.map(t => t.hash);
+  });
 }
 
-module.exports = { getTransactions }
+module.exports = { getTransactions };

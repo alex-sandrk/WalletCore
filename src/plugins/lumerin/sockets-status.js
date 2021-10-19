@@ -1,7 +1,8 @@
 'use strict';
 
 const createLumerinStatus = require('metronome-sdk-status');
-const LumerinContracts = require('metronome-contracts');
+// const LumerinContracts = require('metronome-contracts');
+const LumerinContracts = require('lumerin-contracts');
 
 function getAuctionStatus (web3, chain) {
   const contracts = new LumerinContracts(web3, chain);

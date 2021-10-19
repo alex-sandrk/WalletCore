@@ -1,19 +1,19 @@
-'use strict'
+'use strict';
 
-const debug = require('debug')('met-wallet:core:wallet')
-const Web3 = require('web3')
+const debug = require('debug')('lmr-wallet:core:wallet');
+const Web3 = require('web3');
 
-const api = require('./api')
-const hdkey = require('./hdkey')
+const api = require('./api');
+const hdkey = require('./hdkey');
 
 function createPlugin () {
-  let addresses = []
+  let addresses = [];
 
   function start ({ config, eventBus, plugins }) {
-    debug.enabled = config.debug
+    debug.enabled = config.debug;
 
-    const web3 = new Web3(plugins.eth.web3Provider)
-    let walletId
+    const web3 = new Web3(plugins.eth.web3Provider);
+    let walletId;
 
     function emitBalance (address) {
       web3.eth.getBalance(address)
@@ -34,22 +34,22 @@ function createPlugin () {
             message: `Could not get ${config.symbol} balance`,
             meta: { plugin: 'wallet' }
           })
-        })
+        });
     }
 
     eventBus.on('open-wallets', function ({ address, activeWallet }) {
-      addresses.push(address)
-      walletId = activeWallet
-      emitBalance(address)
-    })
+      addresses.push(address);
+      walletId = activeWallet;
+      emitBalance(address);
+    });
 
     eventBus.on('coin-tx', function () {
       addresses.forEach(function (address) {
         if (walletId) {
-          emitBalance(address)
+          emitBalance(address);
         }
-      })
-    })
+      });
+    });
 
     return {
       api: {
@@ -67,14 +67,14 @@ function createPlugin () {
         'wallet-state-changed'
       ],
       name: 'wallet'
-    }
+    };
   }
 
   function stop () {
-    addresses = []
+    addresses = [];
   }
 
-  return { start, stop }
+  return { start, stop };
 }
 
-module.exports = createPlugin
+module.exports = createPlugin;

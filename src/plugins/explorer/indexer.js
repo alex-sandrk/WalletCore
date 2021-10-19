@@ -1,11 +1,11 @@
-'use strict'
+'use strict';
 
 const { CookieJar } = require('tough-cookie');
 const { create: createAxios } = require('axios');
 const { default: axiosCookieJarSupport } = require('axios-cookiejar-support');
 const { isArrayLike } = require('lodash');
 const blockscout = require('./blockscout');
-const debug = require('debug')('met-wallet:core:explorer:indexer');
+const debug = require('debug')('lmr-wallet:core:explorer:indexer');
 const EventEmitter = require('events');
 const io = require('socket.io-client');
 const pRetry = require('p-retry');

@@ -1,6 +1,6 @@
 'use strict';
 
-const debug = require('debug')('met-wallet:core:explorer');
+const debug = require('debug')('lmr-wallet:core:explorer');
 const Web3 = require('web3');
 
 const createEventsRegistry = require('./events');
@@ -15,19 +15,19 @@ const refreshContracts = require('./refresh-contracts');
 const tryParseEventLog = require('./parse-log');
 
 function createPlugin () {
-  let blocksStream
-  let indexer
-  let syncer
+  let blocksStream;
+  let indexer;
+  let syncer;
 
   function start ({ config, eventBus, plugins }) {
-    debug.enabled = config.debug
+    debug.enabled = config.debug;
 
-    const web3 = new Web3(plugins.eth.web3Provider)
+    const web3 = new Web3(plugins.eth.web3Provider);
 
-    const eventsRegistry = createEventsRegistry()
-    const queue = createQueue(config, eventBus, web3)
+    const eventsRegistry = createEventsRegistry();
+    const queue = createQueue(config, eventBus, web3);
 
-    indexer = createIndexer(config, eventBus)
+    indexer = createIndexer(config, eventBus);
 
     syncer = createTransactionSyncer(
       config,
@@ -36,22 +36,22 @@ function createPlugin () {
       queue,
       eventsRegistry,
       indexer
-    )
+    );
 
-    debug('Initiating blocks stream')
-    blocksStream = createStream(web3)
+    debug('Initiating blocks stream');
+    blocksStream = createStream(web3);
     blocksStream.on('data', function ({ hash, number, timestamp }) {
-      debug('New block', hash, number)
-      eventBus.emit('coin-block', { hash, number, timestamp })
-    })
+      debug('New block', hash, number);
+      eventBus.emit('coin-block', { hash, number, timestamp });
+    });
     blocksStream.on('error', function (err) {
-      debug('Could not get latest block')
+      debug('Could not get latest block');
       eventBus.emit('wallet-error', {
         inner: err,
         message: 'Could not get latest block',
         meta: { plugin: 'explorer' }
-      })
-    })
+      });
+    });
 
     return {
       api: {
@@ -70,19 +70,19 @@ function createPlugin () {
         'wallet-error'
       ],
       name: 'explorer'
-    }
+    };
   }
 
   function stop () {
-    blocksStream.destroy()
-    indexer.disconnect()
-    syncer.stop()
+    blocksStream.destroy();
+    indexer.disconnect();
+    syncer.stop();
   }
 
   return {
     start,
     stop
-  }
+  };
 }
 
 module.exports = createPlugin
