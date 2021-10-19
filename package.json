@@ -22,11 +22,9 @@
   "main": "src/index.js",
   "repository": "https://github.com/Lumerin-protocol/lumerin-wallet-core",
   "scripts": {
-    "check": "dependency-check . --no-dev --ignore-module patch-package --ignore-module websocket-reconnector",
     "lint": "",
     "coverage": "nyc --lines 95 --functions 95 --branches 95 --reporter=lcov --reporter=text npm test",
     "prepare": "patch-package && husky install",
-    "prepublishOnly": "npm run check && npm test && tag-matches",
     "test": "mocha"
   },
   "dependencies": {
@@ -36,7 +34,6 @@
     "ethereumjs-wallet": "^1.0.1",
     "lodash": "^4.17.15",
     "merkletreejs": "0.0.25",
-    "metronome-contracts": "^2.5.0",
     "metronome-sdk-status": "^1.2.1",
     "p-all": "^3.0.0",
     "p-retry": "^4.6.0",
