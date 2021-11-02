@@ -28,7 +28,7 @@ function createPlugin () {
 
     const getRate = () =>
       // getExchangeRate(`${symbol}:USD`).then(function (rate) {
-      getExchangeRate(`${symbol}:USD`).then(function (rate) {
+      getExchangeRate(`ETH:USD`).then(function (rate) {
         if (typeof rate !== 'number') {
           throw new Error(`No exchange rate retrieved for ${symbol}`);
         }

@@ -3,9 +3,9 @@
 // const LumerinContracts = require('metronome-contracts');
 const LumerinContracts = require('lumerin-contracts');
 
-const auctionMetaParser = ({ returnValues }) => ({
+const socketsMetaParser = ({ returnValues }) => ({
   lumerin: {
-    auction: true
+    sockets: true
   },
   returnedValue: returnValues.refund
 });
@@ -21,15 +21,15 @@ function getEventDataCreator (chain) {
     address => ({
       abi,
       contractAddress,
-      eventName: 'LogAuctionFundsIn',
+      eventName: 'LogSocketsIn',
       filter: { sender: address },
-      metaParser: auctionMetaParser,
+      metaParser: socketsMetaParser,
       minBlock
     })
   ];
 }
 
 module.exports = {
-  getEventDataCreator,
-  auctionMetaParser
+  // getEventDataCreator,
+  // socketsMetaParser
 };

@@ -61,12 +61,11 @@ function createPlugin () {
     const web3 = new Web3(eth.web3Provider);
 
     // Register LMR token
-    tokens.registerToken(LumerinContracts[chainId].LMRToken.address, {
+    tokens.registerToken(LumerinContracts[chainId].Lumerin.address, {
       decimals: 8,
       name: 'Lumerin',
       symbol: 'LMR'
     });
-    console.log('LumerinContract - [chainId]: ', LumerinContracts[chainId]);
 
     // Register all LMR events
     const events = [];

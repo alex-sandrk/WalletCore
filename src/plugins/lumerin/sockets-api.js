@@ -8,7 +8,7 @@ function addAccount (web3, privateKey) {
     .add(web3.eth.accounts.privateKeyToAccount(privateKey));
 }
 
-// function buyMet (web3, chain, logTransaction, metaParsers) {
+// function buyLmr (web3, chain, logTransaction, metaParsers) {
 //   const to = LumerinContracts[chain].Auctions.address;
 //   return function (privateKey, { from, value, gas, gasPrice }) {
 //     addAccount(web3, privateKey);
@@ -30,6 +30,6 @@ function addAccount (web3, privateKey) {
 // }
 
 module.exports = {
-  // buyMet,
+  // buyLmr,
   // estimateAuctionGas
 };

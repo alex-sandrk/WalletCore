@@ -11,6 +11,8 @@ function createWeb3 (config, eventBus) {
     { autoReconnect: true, timeout: config.web3Timeout }
   ));
 
+  console.log({ web3 });
+
   web3.currentProvider.on('connect', function () {
     debug('Web3 provider connected');
     eventBus.emit('web3-connection-status-changed', { connected: true });

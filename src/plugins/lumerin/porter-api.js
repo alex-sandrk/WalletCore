@@ -6,7 +6,7 @@ const crypto = require('crypto');
 // const LumerinContracts = require('metronome-contracts')
 const LumerinContracts = require('lumerin-contracts');
 
-// function getExportMetFee (web3, chain) {
+// function getExportLmrFee (web3, chain) {
 //   const { TokenPorter } = new LumerinContracts(web3, chain)
 //   return ({ value }) =>
 //     Promise.all([
@@ -39,6 +39,6 @@ function calcMerkleRoot (hashes) {
 // }
 
 module.exports = {
-  // getExportMetFee,
+  // getExportLmrFee,
   // getMerkleRoot
 };

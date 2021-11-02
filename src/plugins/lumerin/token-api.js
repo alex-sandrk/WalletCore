@@ -4,10 +4,10 @@ const { utils: { toHex } } = require('web3')
 // const LumerinContracts = require('metronome-contracts')
 const LumerinContracts = require('lumerin-contracts')
 
-// const { getExportMetFee } = require('./porter-api')
+// const { getExportLmrFee } = require('./porter-api')
 
 function estimateExportLmrGas (web3, chain) {
-  const { LMRToken } = new LumerinContracts(web3, chain);
+  const { Lumerin } = new LumerinContracts(web3, chain);
   return function (params) {
     const {
       destinationChain,
@@ -19,7 +19,7 @@ function estimateExportLmrGas (web3, chain) {
       value
     } = params;
 
-    return LMRToken.methods.export(
+    return Lumerin.methods.export(
       toHex(destinationChain),
       destinationLmrAddress,
       to || from,
@@ -31,7 +31,7 @@ function estimateExportLmrGas (web3, chain) {
 }
 
 function estimateImportLmrGas (web3, chain) {
-  const { LMRToken } = new LumerinContracts(web3, chain);
+  const { Lumerin } = new LumerinContracts(web3, chain);
   return function (params) {
     const {
       blockTimestamp,
@@ -51,7 +51,7 @@ function estimateImportLmrGas (web3, chain) {
       value
     } = params;
 
-    return LMRToken.methods.importLMR(
+    return Lumerin.methods.importLMR(
       toHex(originChain),
       toHex(destinationChain),
       [destinationLmrAddress, from],
@@ -80,17 +80,17 @@ const getNextNonce = (web3, from) =>
   web3.eth.getTransactionCount(from, 'pending')
 
 function sendLmr (web3, chain, logTransaction, metaParsers) {
-  const { LMRToken } = new LumerinContracts(web3, chain)
+  const { Lumerin } = new LumerinContracts(web3, chain)
   return function (privateKey, { gasPrice, gas, from, to, value }) {
     addAccount(web3, privateKey)
     return getNextNonce(web3, from)
       .then(nonce =>
         logTransaction(
-          LMRToken.methods.transfer(to, value)
+          Lumerin.methods.transfer(to, value)
             .send({ from, gasPrice, gas, nonce }),
           from,
           metaParsers.transfer({
-            address: LMRToken.options.address,
+            address: Lumerin.options.address,
             returnValues: { _from: from, _to: to, _value: value }
           })
         )
@@ -99,7 +99,7 @@ function sendLmr (web3, chain, logTransaction, metaParsers) {
 }
 
 function exportLmr (web3, chain, logTransaction, metaParsers) {
-  const { LMRToken } = new LumerinContracts(web3, chain)
+  const { Lumerin } = new LumerinContracts(web3, chain)
   return function (privateKey, params) {
     const {
       destinationChain,
@@ -121,7 +121,7 @@ function exportLmr (web3, chain, logTransaction, metaParsers) {
     ])
       .then(([nonce, actualFee]) =>
         logTransaction(
-          LMRToken.methods.export(
+          Lumerin.methods.export(
             toHex(destinationChain),
             destinationLmrAddress,
             to || from,
@@ -145,7 +145,7 @@ function exportLmr (web3, chain, logTransaction, metaParsers) {
 }
 
 function importLmr (web3, chain, logTransaction, metaParsers) {
-  const { LMRToken } = new LumerinContracts(web3, chain);
+  const { Lumerin } = new LumerinContracts(web3, chain);
   return function (privateKey, params) {
     const {
       blockTimestamp,
@@ -173,7 +173,7 @@ function importLmr (web3, chain, logTransaction, metaParsers) {
     ])
       .then(([nonce]) =>
         logTransaction(
-          LMRToken.methods.importLMR(
+          Lumerin.methods.importLMR(
             toHex(originChain),
             toHex(destinationChain),
             [destinationLmrAddress, from],
