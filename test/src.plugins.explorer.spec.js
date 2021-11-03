@@ -19,9 +19,6 @@ const {
 const MockProvider = require('./utils/mock-provider')
 
 const {
-  getEventDataCreator
-} = require('../src/plugins/lumerin/auction-events')
-const {
   getEventDataCreators
 } = require('../src/plugins/tokens/events')
 
