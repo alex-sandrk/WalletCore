@@ -25,8 +25,7 @@
     "check": "dependency-check . --no-dev --ignore-module patch-package --ignore-module websocket-reconnector",
     "lint": "",
     "prepare": "patch-package && husky install",
-    "prepublishOnly": "npm run check",
-    "test": "mocha"
+    "prepublishOnly": "npm run check"
   },
   "dependencies": {
     "axios": "0.21.1",
