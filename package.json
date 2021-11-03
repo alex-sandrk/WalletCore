@@ -24,7 +24,6 @@
   "scripts": {
     "check": "dependency-check . --no-dev --ignore-module patch-package --ignore-module websocket-reconnector",
     "lint": "",
-    "coverage": "nyc --lines 95 --functions 95 --branches 95 --reporter=lcov --reporter=text npm test",
     "prepare": "patch-package && husky install",
     "prepublishOnly": "npm run check",
     "test": "mocha"
