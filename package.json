@@ -1,12 +1,12 @@
 {
   "name": "lumerin-wallet-core",
-  "version": "0.1.0",
+  "version": "1.0.0-beta",
   "author": {
     "name": "Kodee McIntosh",
     "email": "kodee@lumerin.io",
     "url": "https://lumerin.io"
   },
-  "description": "Core logic to develop an Ethereum Lumerin wallet",
+  "description": "Core logic to develop a Lumerin wallet",
   "keywords": [
     "crypto",
     "cryptocurrency",
@@ -26,7 +26,7 @@
     "lint": "",
     "coverage": "nyc --lines 95 --functions 95 --branches 95 --reporter=lcov --reporter=text npm test",
     "prepare": "patch-package && husky install",
-    "prepublishOnly": "npm run check && npm test && tag-matches",
+    "prepublishOnly": "npm run check && npm test",
     "test": "mocha"
   },
   "dependencies": {
@@ -38,6 +38,7 @@
     "merkletreejs": "0.0.25",
     "p-all": "^3.0.0",
     "p-retry": "^4.6.0",
+    "lumerin-contracts": "^1.0.0-beta",
     "p-timeout": "^4.1.0",
     "p-whilst": "^2.0.0",
     "patch-package": "^5.1.1",
@@ -51,7 +52,6 @@
   "devDependencies": {
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
-    "check-tag-matches": "^1.0.0",
     "dependency-check": "^4.1.0",
     "eslint": "^7.29.0",
     "eslint-config-bloq": "^2.4.0",
