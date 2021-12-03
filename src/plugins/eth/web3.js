@@ -7,11 +7,11 @@ function createWeb3 (config, eventBus) {
   debug.enabled = config.debug;
 
   const web3 = new Web3(new Web3.providers.WebsocketProvider(
-    config.wsApiUrl,
+    process.env.CHAIN_URL || config.wsApiUrl,
     { autoReconnect: true, timeout: config.web3Timeout }
   ));
 
-  console.log({ web3 });
+  // console.log({ web3 });
 
   web3.currentProvider.on('connect', function () {
     debug('Web3 provider connected');

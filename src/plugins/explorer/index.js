@@ -58,8 +58,8 @@ function createPlugin () {
         logTransaction: createLogTransaction(queue),
         refreshAllTransactions: syncer.refreshAllTransactions,
         refreshTransaction: refreshTransaction(web3, eventsRegistry, queue),
-        refreshSockets: refreshSockets(),
-        refreshContracts: refreshContracts(),
+        refreshSockets: refreshSockets,
+        refreshContracts: refreshContracts,
         registerEvent: eventsRegistry.register,
         syncTransactions: syncer.syncTransactions,
         tryParseEventLog: tryParseEventLog(web3, eventsRegistry)

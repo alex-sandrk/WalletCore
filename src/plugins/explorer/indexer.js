@@ -19,6 +19,7 @@ const pRetry = require('p-retry');
  */
 function createIndexer (config, eventBus) {
   const { chainId, debug: enableDebug, indexerUrl, useNativeCookieJar } = config;
+  const { INDEXER_URL } = process.env;
 
   debug.enabled = enableDebug;
 
@@ -28,12 +29,12 @@ function createIndexer (config, eventBus) {
 
   if (useNativeCookieJar) {
     axios = createAxios({
-      baseURL: indexerUrl
+      baseURL: INDEXER_URL || indexerUrl
     });
   } else {
     jar = new CookieJar();
     axios = axiosCookieJarSupport(createAxios(({
-      baseURL: indexerUrl,
+      baseURL: INDEXER_URL || indexerUrl,
       withCredentials: true
     })));
     axios.defaults.jar = jar;
@@ -77,10 +78,10 @@ function createIndexer (config, eventBus) {
     );
 
   const getSocket = () =>
-    io(`${indexerUrl}/v1`, {
+    io(`${INDEXER_URL || indexerUrl}/v1`, {
       autoConnect: false,
       extraHeaders: jar
-        ? { Cookie: jar.getCookiesSync(indexerUrl).join(';') }
+        ? { Cookie: jar.getCookiesSync(INDEXER_URL || indexerUrl).join(';') }
         : {}
     });
 

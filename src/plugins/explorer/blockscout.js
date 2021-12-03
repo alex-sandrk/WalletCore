@@ -11,9 +11,10 @@ const axios = require('axios').default;
  */
 function getTransactions (address, startblock, endblock) {
   return axios({
-    baseURL: 'https://blockscout.com/etc/mainnet/api',
+    baseURL: 'https://api-ropsten.etherscan.io/api',
     url: '/',
     params: {
+      apikey: '4VPHZ7SNPRRWKE23RBMX1MFUHZYDCAM9A4',
       module: 'account',
       action: 'txlist',
       address,
@@ -22,6 +23,7 @@ function getTransactions (address, startblock, endblock) {
       endblock
     }
   }).then(function ({ data }) {
+    console.log({ data })
     if (data.status !== '1' && data.message !== 'No transactions found') {
       return Promise.reject(new Error(data.message));
     }

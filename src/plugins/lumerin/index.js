@@ -1,8 +1,7 @@
 'use strict';
 
 const debug = require('debug')('lmr-wallet:core:lumerin');
-// const LumerinContracts = require('metronome-contracts');
-const LumerinContracts = require('lumerin-contracts');
+const LumerinContracts = require('@lumerin/contracts');
 const Web3 = require('web3');
 
 // const {
@@ -18,14 +17,12 @@ const Web3 = require('web3');
 //   getMetToMetEstimate
 // } = require('./converter-api')
 const {
-  // getExportMetFee,
-  // getMerkleRoot
-} = require('./porter-api');
-const {
-  estimateExportLmrGas,
-  estimateImportLmrGas,
-  exportLmr,
-  importLmr,
+  getExportLmrFee,
+  getMerkleRoot,
+  // estimateExportLmrGas,
+  // estimateImportLmrGas,
+  // exportLmr,
+  // importLmr,
   sendLmr
 } = require('./token-api');
 // const auctionEvents = require('./auction-events')
@@ -34,7 +31,7 @@ const {
 // const getAuctionStatus = require('./auction-status')
 // const getChainHopStartTime = require('./porter-status');
 // const getConverterStatus = require('./converter-status')
-const porterEvents = require('./porter-events');
+const porterEvents = require('./token-events');
 // const validatorEvents = require('./validator-events.js')
 
 /**
@@ -148,27 +145,27 @@ function createPlugin () {
         //   explorer.logTransaction,
         //   metaParsers
         // ),
-        // getExportMetFee: getExportMetFee(web3, chainId),
+        // getExportLmrFee: getExportLmrFee(web3, chainId),
         // getMerkleRoot: getMerkleRoot(web3, chainId),
-        estimateExportLmrGas: over(estimateExportLmrGas(web3, chainId)),
-        estimateImportLmrGas: over(estimateImportLmrGas(web3, chainId)),
-        exportLmr: exportLmr(
-          web3,
-          chainId,
-          explorer.logTransaction,
-          metaParsers
-        ),
+        // estimateExportLmrGas: over(estimateExportLmrGas(web3, chainId)),
+        // estimateImportLmrGas: over(estimateImportLmrGas(web3, chainId)),
+        // exportLmr: exportLmr(
+        //   web3,
+        //   chainId,
+        //   explorer.logTransaction,
+        //   metaParsers
+        // ),
         // getAuctionGasLimit: over(estimateAuctionGas(web3, chainId)),
         // getConvertCoinEstimate: getCoinToMetEstimate(web3, chainId),
         // getConvertCoinGasLimit: over(estimateCoinToMetGas(web3, chainId)),
         // getConvertMetEstimate: getMetToMetEstimate(web3, chainId),
         // getConvertMetGasLimit: over(estimateMetToCoinGas(web3, chainId)),
-        importLmr: importLmr(
-          web3,
-          chainId,
-          explorer.logTransaction,
-          metaParsers
-        ),
+        // importLmr: importLmr(
+        //   web3,
+        //   chainId,
+        //   explorer.logTransaction,
+        //   metaParsers
+        // ),
         sendLmr: sendLmr(
           web3,
           chainId,

@@ -1,7 +1,7 @@
 'use strict';
 
 // const LumerinContracts = require('metronome-contracts');
-const LumerinContracts = require('lumerin-contracts');
+const LumerinContracts = require('@lumerin/contracts');
 
 function addAccount (web3, privateKey) {
   web3.eth.accounts.wallet.create(0)

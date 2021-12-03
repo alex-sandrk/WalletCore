@@ -266,8 +266,8 @@ function createSyncer (config, eventBus, web3, queue, eventsRegistry, indexer) {
         ]);
       })
       .then(function ([syncedBlock]) {
-        bestBlock = syncedBlock
-        return syncedBlock
+        bestBlock = syncedBlock;
+        return syncedBlock;
       });
 
   const refreshAllTransactions = address =>
@@ -278,8 +278,9 @@ function createSyncer (config, eventBus, web3, queue, eventsRegistry, indexer) {
           getPastEvents(0, bestBlock, address, function (syncedBlock) { bestBlock = syncedBlock })
         ])
           .then(function ([syncedBlock]) {
-            bestBlock = syncedBlock
-            return syncedBlock
+            bestBlock = syncedBlock;
+
+            return syncedBlock;
           })
       );
 
@@ -302,4 +303,4 @@ function createSyncer (config, eventBus, web3, queue, eventsRegistry, indexer) {
   };
 }
 
-module.exports = createSyncer
+module.exports = createSyncer;

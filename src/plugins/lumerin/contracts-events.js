@@ -2,7 +2,7 @@
 
 const { utils: { hexToUtf8 } } = require('web3')
 // const LumerinContracts = require('metronome-contracts')
-const LumerinContracts = require('lumerin-contracts')
+const LumerinContracts = require('@lumerin/contracts')
 
 const exportMetaParser = ({ returnValues }) => ({
   lumerin: {
@@ -18,7 +18,7 @@ const exportMetaParser = ({ returnValues }) => ({
       fee: returnValues.fee,
       genesisTime: returnValues.genesisTime,
       previousBurnHash: returnValues.prevBurnHash,
-      supply: returnValues.supplyOnAllChains,
+      supply: returnValues.supplyOnChain,
       to: returnValues.destinationRecipientAddr,
       value: returnValues.amountToBurn
     }
