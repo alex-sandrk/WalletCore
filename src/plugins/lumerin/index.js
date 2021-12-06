@@ -4,35 +4,7 @@ const debug = require('debug')('lmr-wallet:core:lumerin');
 const LumerinContracts = require('@lumerin/contracts');
 const Web3 = require('web3');
 
-// const {
-//   buyMet,
-//   estimateAuctionGas
-// } = require('./auction-api')
-// const {
-//   convertCoin,
-//   convertMet,
-//   estimateCoinToMetGas,
-//   estimateMetToCoinGas,
-//   getCoinToMetEstimate,
-//   getMetToMetEstimate
-// } = require('./converter-api')
-const {
-  getExportLmrFee,
-  getMerkleRoot,
-  // estimateExportLmrGas,
-  // estimateImportLmrGas,
-  // exportLmr,
-  // importLmr,
-  sendLmr
-} = require('./token-api');
-// const auctionEvents = require('./auction-events')
-// const converterEvents = require('./converter-events')
-// const getAttestationThreshold = require('./validator-status')
-// const getAuctionStatus = require('./auction-status')
-// const getChainHopStartTime = require('./porter-status');
-// const getConverterStatus = require('./converter-status')
-const porterEvents = require('./token-events');
-// const validatorEvents = require('./validator-events.js')
+const { sendLmr } = require('./api');
 
 /**
  * Creates an instance of the Lumerin plugin.
@@ -52,7 +24,7 @@ function createPlugin () {
   function start ({ config, eventBus, plugins }) {
     debug.enabled = config.debug;
 
-    const { chainId, gasOverestimation } = config;
+    const { chainId } = config;
     const { eth, explorer, tokens } = plugins;
 
     const web3 = new Web3(eth.web3Provider);
@@ -64,108 +36,23 @@ function createPlugin () {
       symbol: 'LMR'
     });
 
-    // Register all LMR events
-    const events = [];
-    events
-      // .concat(auctionEvents.getEventDataCreator(chainId))
-      // .concat(converterEvents.getEventDataCreator(chainId))
-      // .concat(porterEvents.getEventDataCreator(chainId))
-      // .concat(validatorEvents.getEventDataCreator(chainId))
-      .forEach(explorer.registerEvent);
-
-    // Start emitting LMR status
-    const emitLumerinStatus = () =>
-      Promise.all([
-        // getAuctionStatus(web3, chainId)
-        //   .then(function (status) {
-        //     eventBus.emit('auction-status-updated', status)
-        //   }),
-        // getConverterStatus(web3, chainId)
-        //   .then(function (status) {
-        //     eventBus.emit('converter-status-updated', status)
-        //   }),
-        // getAttestationThreshold(web3, chainId)
-        //   .then(function (status) {
-        //     eventBus.emit('attestation-threshold-updated', status)
-        //   }),
-        // getChainHopStartTime(web3, chainId)
-        //   .then(function (status) {
-        //     eventBus.emit('chain-hop-start-time-updated', status)
-        //   })
-      ])
-        .catch(function (err) {
-          eventBus.emit('wallet-error', {
-            inner: err,
-            message: 'Lumerin status could not be retrieved',
-            meta: { plugin: 'lumerin' }
-          });
-        });
-
-    emitLumerinStatus();
-
-    eventBus.on('coin-block', emitLumerinStatus);
+    // eventBus.on('coin-block', emitLumerinStatus);
 
     // Collect meta parsers
     const metaParsers = Object.assign(
-      {
-        // auction: auctionEvents.auctionMetaParser,
-        // converter: converterEvents.converterMetaParser,
-        export: porterEvents.exportMetaParser,
-        import: porterEvents.importMetaParser,
-        importRequest: porterEvents.importRequestMetaParser
-      },
+      // {
+      //   // auction: auctionEvents.auctionMetaParser,
+      //   // converter: converterEvents.converterMetaParser,
+      //   export: porterEvents.exportMetaParser,
+      //   import: porterEvents.importMetaParser,
+      //   importRequest: porterEvents.importRequestMetaParser
+      // },
       tokens.metaParsers
     );
-
-    // Define gas over-estimation wrapper
-    const over = fn =>
-      (...args) =>
-        fn(...args).then(gas =>
-          ({ gasLimit: Math.round(gas * gasOverestimation) })
-        )
 
     // Build and return API
     return {
       api: {
-        // buyLumerin: buyMet(
-        //   web3,
-        //   chainId,
-        //   explorer.logTransaction,
-        //   metaParsers
-        // ),
-        // convertCoin: convertCoin(
-        //   web3,
-        //   chainId,
-        //   explorer.logTransaction,
-        //   metaParsers
-        // ),
-        // convertMet: convertMet(
-        //   web3,
-        //   chainId,
-        //   explorer.logTransaction,
-        //   metaParsers
-        // ),
-        // getExportLmrFee: getExportLmrFee(web3, chainId),
-        // getMerkleRoot: getMerkleRoot(web3, chainId),
-        // estimateExportLmrGas: over(estimateExportLmrGas(web3, chainId)),
-        // estimateImportLmrGas: over(estimateImportLmrGas(web3, chainId)),
-        // exportLmr: exportLmr(
-        //   web3,
-        //   chainId,
-        //   explorer.logTransaction,
-        //   metaParsers
-        // ),
-        // getAuctionGasLimit: over(estimateAuctionGas(web3, chainId)),
-        // getConvertCoinEstimate: getCoinToMetEstimate(web3, chainId),
-        // getConvertCoinGasLimit: over(estimateCoinToMetGas(web3, chainId)),
-        // getConvertMetEstimate: getMetToMetEstimate(web3, chainId),
-        // getConvertMetGasLimit: over(estimateMetToCoinGas(web3, chainId)),
-        // importLmr: importLmr(
-        //   web3,
-        //   chainId,
-        //   explorer.logTransaction,
-        //   metaParsers
-        // ),
         sendLmr: sendLmr(
           web3,
           chainId,
@@ -174,10 +61,6 @@ function createPlugin () {
         )
       },
       events: [
-        // 'attestation-threshold-updated',
-        // 'auction-status-updated',
-        // 'chain-hop-start-time-updated',
-        // 'converter-status-updated',
         'wallet-error'
       ],
       name: 'lumerin'

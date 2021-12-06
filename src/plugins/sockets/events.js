@@ -3,6 +3,29 @@
 // const LumerinContracts = require('metronome-contracts');
 const LumerinContracts = require('@lumerin/contracts');
 
+function createEventsRegistry () {
+  const registeredEvents = [];
+
+  return {
+    getAll: () => registeredEvents,
+    register: registration => registeredEvents.push(registration)
+  };
+}
+
+module.exports = createEventsRegistry;
+
+
+
+
+
+
+
+
+
+
+
+
+
 const socketsMetaParser = ({ returnValues }) => ({
   lumerin: {
     sockets: true

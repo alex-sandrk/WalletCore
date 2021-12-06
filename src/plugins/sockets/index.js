@@ -1,71 +1,54 @@
 'use strict';
 
-const { getExchangeRate } = require('safe-exchange-rate');
-const debug = require('debug')('lmr-wallet:core:rates');
+const debug = require('debug')('lmr-wallet:core:sockets');
+const Web3 = require('web3');
 
-const createStream = require('./stream');
+const createConnectionManager = require('./connection-manager');
 
-/**
- * Create a plugin instance.
- *
- * @returns {({ start: Function, stop: () => void})} The plugin instance.
- */
 function createPlugin () {
-  let dataStream;
+  let connectionManager;
 
-  /**
-   * Start the plugin instance.
-   *
-   * @param {object} options Start options.
-   * @returns {{ events: string[] }} The instance details.
-   */
-  function start ({ config, eventBus }) {
-    debug.enabled = debug.enabled || config.debug;
+  function start ({ config, eventBus, plugins }) {
+    debug.enabled = config.debug;
 
-    debug('Plugin starting');
+    connectionManager = createConnectionManager(config);
 
-    const { ratesUpdateMs, symbol } = config;
-
-    const getRate = () =>
-      // getExchangeRate(`${symbol}:USD`).then(function (rate) {
-      getExchangeRate(`ETH:USD`).then(function (rate) {
-        if (typeof rate !== 'number') {
-          throw new Error(`No exchange rate retrieved for ${symbol}`);
-        }
-        return rate;
-      });
-
-    dataStream = createStream(getRate, ratesUpdateMs);
-
-    dataStream.on('data', function (price) {
-      debug('Coin price received');
-
-      const priceData = { token: symbol, currency: 'USD', price };
-      eventBus.emit('coin-price-updated', priceData);
-    });
-
-    dataStream.on('error', function (err) {
-      debug('Data stream error');
-
-      eventBus.emit('wallet-error', {
-        inner: err,
-        message: `Could not get exchange rate for ${symbol}`,
-        meta: { plugin: 'rates' }
-      });
-    });
+    debug('Initiating blocks stream');
+    // blocksStream = createStream(web3);
+    // blocksStream.on('data', function ({ hash, number, timestamp }) {
+    //   debug('New block', hash, number);
+    //   eventBus.emit('coin-block', { hash, number, timestamp });
+    // });
+    // blocksStream.on('error', function (err) {
+    //   debug('Could not get latest block');
+    //   eventBus.emit('wallet-error', {
+    //     inner: err,
+    //     message: 'Could not get latest block',
+    //     meta: { plugin: 'explorer' }
+    //   });
+    // });
 
     return {
-      events: ['coin-price-updated', 'wallet-error']
+      api: {
+        getConnections: connectionManager.getConnections(),
+        getConnectionsStream: connectionManager.getConnectionsStream()
+        // logTransaction: createLogTransaction(queue),
+        // refreshAllTransactions: syncer.refreshAllTransactions,
+        // refreshTransaction: refreshTransaction(web3, eventsRegistry, queue),
+        // registerEvent: eventsRegistry.register,
+        // syncTransactions: syncer.syncTransactions,
+        // tryParseEventLog: tryParseEventLog(web3, eventsRegistry)
+      },
+      events: [
+        'socket-connections-status-changed',
+        'wallet-error'
+      ],
+      name: 'sockets'
     };
   }
 
-  /**
-   * Stop the plugin instance.
-   */
   function stop () {
-    debug('Plugin stopping');
-
-    dataStream.destroy();
+    connectionManager.disconnect();
   }
 
   return {

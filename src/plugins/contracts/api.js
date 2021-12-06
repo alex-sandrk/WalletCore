@@ -6,104 +6,70 @@ const { utils: { toHex, BN, toBN } } = require('web3')
 // const LumerinContracts = require('metronome-contracts')
 const LumerinContracts = require('@lumerin/contracts')
 
-// const { getExportLmrFee } = require('./porter-api')
+// function getContracts (web3, chain) {
+//   const { Lumerin } = new LumerinContracts(web3, chain);
+//   return function (params) {
+//     const {
+//       destinationChain,
+//       destinationLmrAddress,
+//       extraData,
+//       fee,
+//       from,
+//       to,
+//       value
+//     } = params;
 
-const sha256 = data => crypto.createHash('sha256').update(data).digest();
+//     return Lumerin.methods.export(
+//       toHex(destinationChain),
+//       destinationLmrAddress,
+//       to || from,
+//       value,
+//       fee,
+//       extraData
+//     ).estimateGas({ from });
+//   }
+// }
 
-function calcMerkleRoot (hashes) {
-  const leaves = hashes.map(x => Buffer.from(x.slice(2), 'hex'));
-  const tree = new MerkleTree(leaves, sha256);
-  return `0x${tree.getRoot().toString('hex')}`;
-}
+// function estimateImportLmrGas (web3, chain) {
+//   const { Lumerin } = new LumerinContracts(web3, chain);
+//   return function (params) {
+//     const {
+//       blockTimestamp,
+//       burnSequence,
+//       currentBurnHash,
+//       currentTick,
+//       dailyMintable,
+//       destinationChain,
+//       destinationLmrAddress,
+//       extraData,
+//       fee,
+//       from,
+//       originChain,
+//       previousBurnHash,
+//       supply,
+//       root,
+//       value
+//     } = params;
 
-function getMerkleRoot (web3, chain) {
-  // const { TokenPorter } = new LumerinContracts(web3, chain)
-  return burnSeq =>
-    Promise.all(new Array(16).fill()
-      .map((_, i) => toBN(burnSeq).subn(i))
-      .filter(seq => seq.gten(0))
-      .reverse()
-      // .map(seq => TokenPorter.methods.exportedBurns(seq.toString()).call())
-    )
-      .then(calcMerkleRoot)
-}
-
-function getExportLmrFee (web3, chain) {
-  const { TokenPorter } = new LumerinContracts(web3, chain)
-  return ({ value }) =>
-    Promise.all([
-      TokenPorter.methods.minimumExportFee().call().then(fee => toBN(fee)),
-      TokenPorter.methods.exportFee().call().then(fee => toBN(fee))
-    ])
-      .then(([minFee, exportFee]) =>
-        BN.max(minFee, exportFee.mul(toBN(value)).divn(10000)).toString()
-      )
-}
-
-function estimateExportLmrGas (web3, chain) {
-  const { Lumerin } = new LumerinContracts(web3, chain);
-  return function (params) {
-    const {
-      destinationChain,
-      destinationLmrAddress,
-      extraData,
-      fee,
-      from,
-      to,
-      value
-    } = params;
-
-    return Lumerin.methods.export(
-      toHex(destinationChain),
-      destinationLmrAddress,
-      to || from,
-      value,
-      fee,
-      extraData
-    ).estimateGas({ from });
-  }
-}
-
-function estimateImportLmrGas (web3, chain) {
-  const { Lumerin } = new LumerinContracts(web3, chain);
-  return function (params) {
-    const {
-      blockTimestamp,
-      burnSequence,
-      currentBurnHash,
-      currentTick,
-      dailyMintable,
-      destinationChain,
-      destinationLmrAddress,
-      extraData,
-      fee,
-      from,
-      originChain,
-      previousBurnHash,
-      supply,
-      root,
-      value
-    } = params;
-
-    return Lumerin.methods.importLMR(
-      toHex(originChain),
-      toHex(destinationChain),
-      [destinationLmrAddress, from],
-      extraData,
-      [previousBurnHash, currentBurnHash],
-      supply,
-      [
-        blockTimestamp,
-        value,
-        fee,
-        currentTick,
-        dailyMintable,
-        burnSequence
-      ],
-      root
-    ).estimateGas({ from });
-  }
-}
+//     return Lumerin.methods.importLMR(
+//       toHex(originChain),
+//       toHex(destinationChain),
+//       [destinationLmrAddress, from],
+//       extraData,
+//       [previousBurnHash, currentBurnHash],
+//       supply,
+//       [
+//         blockTimestamp,
+//         value,
+//         fee,
+//         currentTick,
+//         dailyMintable,
+//         burnSequence
+//       ],
+//       root
+//     ).estimateGas({ from });
+//   }
+// }
 
 function addAccount (web3, privateKey) {
   web3.eth.accounts.wallet.create(0)
@@ -113,8 +79,16 @@ function addAccount (web3, privateKey) {
 const getNextNonce = (web3, from) =>
   web3.eth.getTransactionCount(from, 'pending')
 
+const getContracts = (web3, chain) => {
+  const { WebFacing } = new LumerinContracts(web3, chain)
+
+  return function() {
+    logTransaction(WebFacing.methods.getListOfContracts());
+  }
+}
+
 function sendLmr (web3, chain, logTransaction, metaParsers) {
-  const { Lumerin } = new LumerinContracts(web3, chain)
+  const { WebFacing } = new LumerinContracts(web3, chain)
   return function (privateKey, { gasPrice, gas, from, to, value }) {
     addAccount(web3, privateKey)
     return getNextNonce(web3, from)
