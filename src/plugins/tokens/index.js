@@ -34,9 +34,8 @@ function createPlugin () {
 
   function getTokenBalance (web3, contractAddress, address) {
     const contract = new web3.eth.Contract(abi, contractAddress);
-    let bal = contract.methods.balanceOf(address).call();
-    console.log({ bal });
-    return bal;
+
+    return contract.methods.balanceOf(address).call();
   }
 
   const getTokensGasLimit = web3 =>

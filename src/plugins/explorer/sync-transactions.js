@@ -54,6 +54,7 @@ function createSyncer (config, eventBus, web3, queue, eventsRegistry, indexer) {
         // eslint-disable-next-line promise/catch-or-return
         getTransactions(bestSyncBlock, number, address)
           .then(function (transactions) {
+            console.log({ transactions })
             const { length } = transactions;
             debug(`${length} past ${symbol} transactions retrieved`)
             transactions.forEach(queue.addTransaction(address));
