@@ -1,6 +1,6 @@
 {
   "name": "@lumerin/wallet-core",
-  "version": "1.0.3-beta",
+  "version": "1.0.4-beta",
   "author": {
     "name": "Kodee McIntosh",
     "email": "kodee@lumerin.io",
@@ -20,7 +20,7 @@
     "src"
   ],
   "main": "src/index.js",
-  "repository": "https://github.com/Lumerin-protocol/lumerin-wallet-core",
+  "repository": "https://github.com/Lumerin-protocol/WalletCore",
   "scripts": {
     "check": "dependency-check . --no-dev --ignore-module patch-package --ignore-module websocket-reconnector",
     "lint": "",
@@ -28,7 +28,7 @@
     "prepublishOnly": "npm run check"
   },
   "dependencies": {
-    "@lumerin/contracts": "1.0.3-beta",
+    "@lumerin/contracts": "1.0.5-beta",
     "axios": "0.21.1",
     "axios-cookiejar-support": "1.0.1",
     "debug": "4.1.1",
