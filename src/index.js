@@ -11,9 +11,9 @@ const pluginCreators = [
   require('./plugins/eth'),
   require('./plugins/explorer'),
   require('./plugins/wallet'),
-  require('./plugins/tokens'),
+  require('./plugins/token'),
   require('./plugins/lumerin'),
-  require('./plugins/sockets'),
+  require('./plugins/proxy-router'),
   require('./plugins/contracts')
 ];
 
@@ -58,7 +58,7 @@ function createCore () {
       if (events) {
         coreEvents = union(coreEvents, events);
       }
-    })
+    });
 
     debug('Exposed events', coreEvents);
 

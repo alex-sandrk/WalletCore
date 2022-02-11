@@ -1,32 +1,26 @@
 'use strict';
 
 const debug = require('debug')('lmr-wallet:core:wallet');
+const { add } = require('lodash');
 const Web3 = require('web3');
 
 const api = require('./api');
 const hdkey = require('./hdkey');
 
 function createPlugin () {
-  let addresses = [];
+  let walletAddress;
 
   function start ({ config, eventBus, plugins }) {
     debug.enabled = config.debug;
 
     const web3 = new Web3(plugins.eth.web3Provider);
-    let walletId;
 
-    function emitBalance (address) {
+    function emitEthBalance (address) {
       web3.eth.getBalance(address)
         .then(function (balance) {
-          eventBus.emit('wallet-state-changed', {
-            [walletId]: {
-              addresses: {
-                [address]: {
-                  balance
-                }
-              }
-            }
-          })
+          eventBus.emit('eth-balance-changed', {
+            ethBalance: balance
+          });
         })
         .catch(function (err) {
           eventBus.emit('wallet-error', {
@@ -37,18 +31,15 @@ function createPlugin () {
         });
     }
 
-    eventBus.on('open-wallets', function ({ address, activeWallet }) {
-      addresses.push(address);
-      walletId = activeWallet;
-      emitBalance(address);
+    eventBus.on('open-wallet', function ({ address }) {
+      walletAddress = address;
+      emitEthBalance(walletAddress);
     });
 
-    eventBus.on('coin-tx', function () {
-      addresses.forEach(function (address) {
-        if (walletId) {
-          emitBalance(address);
-        }
-      });
+    eventBus.on('eth-tx', function () {
+      if(walletAddress) {
+        emitEthBalance(walletAddress);
+      }
     });
 
     return {
@@ -58,20 +49,21 @@ function createPlugin () {
         getAddressAndPrivateKey: hdkey.getAddressAndPrivateKey,
         getGasLimit: api.estimateGas(web3),
         getGasPrice: api.getGasPrice(web3),
-        sendCoin: api.sendSignedTransaction(
-          web3, plugins.explorer.logTransaction
-        )
+        sendCoin: api.sendSignedTransaction(web3, plugins.explorer.logTransaction)
       },
       events: [
-        'wallet-error',
-        'wallet-state-changed'
+        'open-wallet',
+        'eth-tx',
+        'eth-balance-changed',
+        'wallet-state-changed',
+        'wallet-error'
       ],
       name: 'wallet'
     };
   }
 
   function stop () {
-    addresses = [];
+    walletAddress = '';
   }
 
   return { start, stop };

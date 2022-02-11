@@ -61,6 +61,9 @@ function createPlugin () {
         tryParseEventLog: tryParseEventLog(web3, eventsRegistry)
       },
       events: [
+        'wallet-transactions-changed',
+        'token-transactions-changed',
+        'wallet-state-changed',
         'coin-block',
         'indexer-connection-status-changed',
         'wallet-error'
@@ -70,7 +73,8 @@ function createPlugin () {
   }
 
   function stop () {
-    blocksStream.destroy();
+    // blocksStream.destroy();
+    blocksStream.unsubscribe();
     indexer.disconnect();
     syncer.stop();
   }

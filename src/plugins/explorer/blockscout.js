@@ -11,10 +11,20 @@ const axios = require('axios').default;
  */
 function getTransactions (address, startblock, endblock) {
   return axios({
-    baseURL: 'https://api-ropsten.etherscan.io/api',
+    // baseURL: 'https://api-ropsten.etherscan.io/api',
+    // url: '/',
+    // params: {
+    //   apikey: '4VPHZ7SNPRRWKE23RBMX1MFUHZYDCAM9A4',
+    //   module: 'account',
+    //   action: 'txlist',
+    //   address,
+    //   sort: 'desc',
+    //   startblock,
+    //   endblock
+    // }
+    baseURL: 'https://blockscout.com/etc/mainnet/api',
     url: '/',
     params: {
-      apikey: '4VPHZ7SNPRRWKE23RBMX1MFUHZYDCAM9A4',
       module: 'account',
       action: 'txlist',
       address,

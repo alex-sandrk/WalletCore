@@ -11,7 +11,6 @@ function createQueue (config, eventBus, web3) {
   const metasCache = {};
 
   let pendingEvents = [];
-  let walletId;
 
   function mergeEvents (hash, events) {
     const metas = events.map(({ event, metaParser }) => metaParser(event));
@@ -33,22 +32,22 @@ function createQueue (config, eventBus, web3) {
   }
 
   function emitTransactions (address, transactions) {
-    if (!walletId) {
-      throw new Error('Wallet ID not set');
-    }
-
-    eventBus.emit('wallet-state-changed', {
-      [walletId]: {
-        addresses: {
-          [address]: {
-            transactions: transactions
-              .filter(data => !!data.transaction)
-              .map(fillInStatus)
-          }
-        }
-      }
+    eventBus.emit('wallet-transactions-changed', {
+      transactions: transactions
+        .filter(data => !!data.transaction)
+        .map(fillInStatus)
     });
-    eventBus.emit('coin-tx');
+
+    eventBus.emit('token-transactions-changed', {
+      transactions: transactions
+        .filter(data => !!data.transaction)
+        .map(fillInStatus),
+    });
+
+    Promise.all([
+      eventBus.emit('eth-tx'),
+      eventBus.emit('lmr-tx')
+    ]);
   }
 
   function tryEmitTransactions (address, transactions) {
@@ -117,18 +116,14 @@ function createQueue (config, eventBus, web3) {
       });
     };
 
-  eventBus.on('open-wallets', function ({ activeWallet }) {
-    walletId = activeWallet;
-  });
-
   const addEvent = (address, metaParser) => function (event) {
     debug('Queueing event', event.event);
     return new Promise(function (resolve, reject) {
       pendingEvents.push({
         address,
         event,
-        done: err => err ? reject(err) : resolve(),
         metaParser,
+        done: err => err ? reject(err) : resolve()
       })
       debouncedEmitPendingEvents(address)
     });

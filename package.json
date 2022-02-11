@@ -20,7 +20,7 @@
     "src"
   ],
   "main": "src/index.js",
-  "repository": "https://github.com/Lumerin-protocol/WalletCore",
+  "repository": "https://gitlab.com/TitanInd/proxy/wallet-core",
   "scripts": {
     "check": "dependency-check . --no-dev --ignore-module patch-package --ignore-module websocket-reconnector",
     "lint": "",
@@ -28,7 +28,6 @@
     "prepublishOnly": "npm run check"
   },
   "dependencies": {
-    "@lumerin/contracts": "1.0.5-beta",
     "axios": "0.21.1",
     "axios-cookiejar-support": "1.0.1",
     "debug": "4.1.1",

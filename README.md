@@ -1,6 +1,9 @@
+<h1>
+  <img src="./logo.png" alt="Lumerin Wallet Core Library" width="20%">
+</h1>
 # lumerin-wallet-core
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/TitanInd/lumerin-wallet-core.svg)](https://greenkeeper.io/)
+<!-- [![Greenkeeper badge](https://badges.greenkeeper.io/TitanInd/lumerin-wallet-core.svg)](https://greenkeeper.io/) -->
 
 Core logic to develop an Ethereum Lumerin wallet.
 
