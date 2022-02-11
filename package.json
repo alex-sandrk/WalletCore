@@ -34,7 +34,6 @@
     "debug": "4.1.1",
     "ethereumjs-wallet": "1.0.1",
     "lodash": "4.17.15",
-    "merkletreejs": "0.0.25",
     "p-all": "3.0.0",
     "p-retry": "4.6.0",
     "p-timeout": "4.1.0",
