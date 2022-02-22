@@ -32,7 +32,7 @@ function createPlugin () {
 
     return {
       api: {
-        refreshConnections
+        refreshConnections: refreshConnections()
         // getConnections: connectionManager.getConnections(),
         // getConnectionsStream: connectionManager.getConnectionsStream()
       },

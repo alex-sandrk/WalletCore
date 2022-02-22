@@ -22,7 +22,7 @@ function createPlugin () {
     const web3 = new Web3(plugins.eth.web3Provider);
 
     function emitLmrBalance (walletAddress) {
-      getTokenBalance(web3, walletAddress)
+      getTokenBalance(web3, chainId, walletAddress)
         .then(function (balance) {
           eventBus.emit('token-balance-changed', {
             lmrBalance: balance,

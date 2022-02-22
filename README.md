@@ -1,5 +1,5 @@
 <h1>
-  <img src="./logo.png" alt="Lumerin Wallet Core Library" width="20%">
+  <img src="./logo.svg" alt="Lumerin Wallet Core Library" width="20%">
 </h1>
 # lumerin-wallet-core
 
@@ -14,16 +14,16 @@ The core logic has a modular design where each module or plugin can emit events 
 Minimum Node version required is v12, v14 is recommended
 
 ```js
-const createCore = require('lumerin-wallet-core')
+const createCore = require('lumerin-wallet-core');
 
-const core = createCore()
+const core = createCore();
 
-const { api, emitter, events } = core.start()
+const { api, emitter, events } = core.start();
 
 // Listen for `events` on the `emitter`.
 // Call `api` methods
 
-core.stop()
+core.stop();
 ```
 
 ## API

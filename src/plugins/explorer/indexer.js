@@ -84,7 +84,7 @@ function createIndexer (config, eventBus) {
     io(WS_INDEXER_URL || indexerUrl, {
       autoConnect: false,
       extraHeaders: jar
-        ? { Cookie: jar.getCookiesSync(INDEXER_URL || indexerUrl).join(';') }
+        ? { Cookie: jar.getCookiesSync(WS_INDEXER_URL || indexerUrl).join(';') }
         : {}
     });
 

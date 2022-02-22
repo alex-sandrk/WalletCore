@@ -49,7 +49,7 @@ function createPlugin () {
         getAddressAndPrivateKey: hdkey.getAddressAndPrivateKey,
         getGasLimit: api.estimateGas(web3),
         getGasPrice: api.getGasPrice(web3),
-        sendCoin: api.sendSignedTransaction(web3, plugins.explorer.logTransaction)
+        sendEth: api.sendSignedTransaction(web3, plugins.explorer.logTransaction)
       },
       events: [
         'open-wallet',
