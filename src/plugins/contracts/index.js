@@ -27,6 +27,7 @@ function createPlugin () {
 
       return getActiveContracts(web3, chainId)
         .then((contracts) => {
+          console.log('----------------------------------------   ', { contracts })
           eventBus.emit('contracts-scan-finished', {
             actives: contracts
           });
