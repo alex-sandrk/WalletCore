@@ -33,7 +33,7 @@ function createPlugin () {
           });
         })
         .catch(function (error) {
-          logger.warn('Could not sync contracts/events', error.stack);
+          console.log('Could not sync contracts/events', error.stack);
           return {};
         });
     }
