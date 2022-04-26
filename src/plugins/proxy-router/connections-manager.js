@@ -52,12 +52,14 @@ function createConnectionsManager (config, eventBus) {
   const getCookiePromise = useNativeCookieJar
     ? Promise.resolve()
     : pRetry(
-      () =>
-        getConnections()
-          .then(function () {
+      () => {
+        console.log("try get connections");
+        return getConnections()
+          .then(function (data) {
             debug('Got connections stream cookie')
-          }),
-        () => {},
+            return data;
+          });
+      },
       {
         forever: true,
         maxTimeout: 5000,
@@ -83,60 +85,118 @@ function createConnectionsManager (config, eventBus) {
     // TODO: remove dummy data
 
     getCookiePromise
-      .then(function () {
-        socket = getSocket();
+      .then(function (initialConnections) {
+        debug("polling for connections...", initialConnections);
 
-        socket.on('connect', function () {
-          debug('Connection manager connected to proxy-router');
-          eventBus.emit('proxy-router-status-changed', {
-            isConnected: true
-          });
-          socket.emit('subscribe', { type: 'cxns' },
-            function (err) {
-              if (err) {
-                stream.emit('error', err)
-              }
-            }
-          )
-        });
-
-        socket.on('cxns', function (data) {
-          if (!data) {
-            stream.emit('error', new Error('Indexer sent no tx event data'));
-            return;
-          }
-
-          const { type, connections } = data;
-
-          if (type === 'cxns') {
-            if (typeof connections !== 'Array') {
-              stream.emit('error', new Error('Connections Manager sent bad cxns event data'));
-              return;
-            }
-
-            stream.emit('data', { connections });
+        eventBus.emit("initial-state-received", {
+          proxyRouter: {
+            connections: initialConnections,
+            syncStatus: "syncing"
           }
         });
 
-        socket.on('disconnect', function (reason) {
-          debug('Indexer disconnected');
-          eventBus.emit('proxy-router-status-changed', {
-            connected: false
+        let isConnected = true;
+
+        setInterval(function () {
+          console.log("attempting to get connections");
+          getConnections().then(function (connections) {
+console.log("got connections: ", connections);
+            if (!isConnected) {
+              isConnected = true
+              console.log("emit proxy-router-status-changed");
+              eventBus.emit('proxy-router-status-changed', {
+                isConnected,
+                syncStatus: "synced"
+              });
+            }
+            console.log("emit proxy-router-connections-changed");
+            stream.emit('data', {
+              connections,
+              syncStatus: "synced"
+            });
+          }).catch(err => {
+
+            isConnected = false;
+
+            eventBus.emit('proxy-router-status-changed', {
+              isConnected,
+              syncStatus: "syncing"
+            });
+
+            eventBus.emit("error", `error fetching connections: ${err}`);
           });
-          stream.emit('error', new Error(`Indexer disconnected with ${reason}`));
-        })
+        }, 5000);
+        // debug("creating socket");
+        //   socket = getSocket();
 
-        socket.on('reconnect', function () {
-          stream.emit('resync');
-        });
+        //   debug("created socket: ", socket.id)
+        //   socket.on('connect', function () {
+        //     debug('Connection manager connected to proxy-router');
+        //     eventBus.emit('proxy-router-status-changed', {
+        //       isConnected: true
+        //     });
+        //     socket.emit('subscribe', { type: 'cxns' },
+        //       function (err) {
+        //         if (err) {
+        //           stream.emit('error', err)
+        //         }
+        //       }
+        //     )
+        //   });
 
-        socket.on('error', function (err) {
-          stream.emit('error', err);
-        });
+        //   socket.on('cxns', function (data) {
+        //     console.log("cxns data: ", data);
+        //     if (!data) {
+        //       stream.emit('error', new Error('Indexer sent no tx event data'));
+        //       return;
+        //     }
 
-        socket.open();
+        //     const { type, connections } = data;
+
+        //     if (type === 'cxns') {
+        //       if (typeof connections !== 'Array') {
+        //         stream.emit('error', new Error('Connections Manager sent bad cxns event data'));
+        //         return;
+        //       }
+
+        //       stream.emit('data', { connections });
+        //     }
+        //   });
+
+        //   socket.on('disconnect', function (reason) {
+        //     debug('Connection manager disconnected');
+        //     eventBus.emit('proxy-router-status-changed', {
+        //       connected: false
+        //     });
+        //     stream.emit('error', new Error(`Indexer disconnected with ${reason}`));
+        //   })
+
+        //   socket.on('reconnect', function () {
+        //     stream.emit('resync');
+        //   });
+
+        //   socket.on('error', function (err) {
+        //     debug("connections manager socket error");
+        //     stream.emit('error', err);
+        //   });
+
+        //   socket.on("connect_error", (err) => {
+        //     debug(`connect_error due to ${err.name} - ${err.message}\r\n\r\n`);
+        //   });
+
+        //   // socket.open();
+
+        //   debug("socket listeners: ", [...socket.listeners("connect"), ...socket.listeners("disconnect"), ...socket.listeners("cxns"), ...socket.listeners("reconnect")]);
+        //   // setInterval(() => {
+
+        //   //   debug("socket connected: ", socket.connected, "; socket disconnected: ", socket.disconnected);
+        //   //   socket.open();
+        //   // },
+        //   //   2000
+        //   // )
       })
       .catch(function (err) {
+        debug("connections manager catch cookie promise error");
         stream.emit('error', err);
       });
 
