@@ -62,21 +62,51 @@ async function getActiveContracts(web3, chain) {
   return activeContracts;
 }
 
-function createContract(web3, chain) {
-  if(!web3) {
+function createContract(web3, chain, plugins) {
+  if (!web3) {
     debug('Not a valid Web3 instance');
     return;
   }
+
   const { CloneFactory } = new LumerinContracts(web3, chain);
 
-  return function(params) {
-    const { price, limit, speed, duration, validatorAddress } = params;
+  return async function (params) {
+    const { gasPrice } = await plugins.wallet.getGasPrice();
+    console.log("gas price: ", gasPrice);
+    const { price, limit = 0, speed, duration, sellerAddress, validatorAddress = "0x0000000000000000000000000000000000000000" } = params;
 
-    return CloneFactory.methods.setCreateNewRentalContract(price, limit, speed, duration, validatorAddress)
-    .then((receipt) => receipt)
-    .catch(error => {
-      debug('Error when trying to create contract: ', error);
-    });
+    console.log("sending with gas... ", { price, limit, speed, duration, validatorAddress, sellerAddress });
+plugins.wallet.ensureAccount()
+    return web3.eth.getTransactionCount(sellerAddress, 'pending')
+      .then(nonce =>
+        plugins.explorer.logTransaction(
+          CloneFactory.methods.setCreateNewRentalContract(price, limit, speed, duration, validatorAddress).send({
+            from: sellerAddress,
+            gas: 8000000,
+            gasPrice,
+            nonce
+          }, function (data, err) {
+            console.log("error: ", err);
+            console.log("data: ", data);
+          }),
+          sellerAddress
+        )
+      );
+
+    return CloneFactory.methods.setCreateNewRentalContract(price, limit, speed, duration, validatorAddress).send({
+      from: sellerAddress,
+      gas: 8000000,
+    }, function (data, err) {
+      console.log("error: ", err);
+      console.log("data: ", data);
+    })
+      .then((receipt) => {
+        debug("receipt: ", receipt);
+        return receipt;
+      })
+      .catch(error => {
+        debug('Error when trying to create contract: ', error);
+      });
   }
 }
 

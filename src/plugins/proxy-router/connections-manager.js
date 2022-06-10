@@ -55,7 +55,7 @@ function createConnectionsManager (config, eventBus) {
         console.log("try get connections");
         return getConnections()
           .then(function (data) {
-            debug('Got connections stream cookie')
+            console.log('Got connections stream cookie')
             return data;
           });
       },
@@ -107,7 +107,7 @@ console.log("got connections: ", connections);
                 syncStatus: "synced"
               });
             }
-            console.log("emit proxy-router-connections-changed");
+            
             stream.emit('data', {
               connections,
               syncStatus: "synced"
