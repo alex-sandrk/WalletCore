@@ -71,6 +71,23 @@ The following plugins are bundled:
 - `tokens`: Provides base ERC20 token functions.
 - `wallet`: Provides base key/account management
 
+# INTERNAL DEPLOYMENT ONLY
+
+TODO - Remove Deployment instructions after ci/cd setup
+
+```
+git tag {new_version}
+npm login --scope=@lumerin
+		 | | | | |
+	    	v v v v v
+npm publish --access=public
+```
+
+Publish Order:
+@lumerin/contracts
+@lumerin/wallet-ui-logic
+@lumerin/wallet-core
+
 ## License
 
 MIT
