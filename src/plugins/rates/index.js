@@ -29,7 +29,7 @@ function createPlugin () {
     const getRate = () =>
     // TODO: Update LMR/ETH or LMR/USD rate whenever we get put onto a dex
       // getExchangeRate(`${symbol}:USD`).then(function (rate) {
-      getExchangeRate(`ETH:USD`).then(function (rate) {
+      getExchangeRate(`LMR:USD`).then(function (rate) {
         if (typeof rate !== 'number') {
           throw new Error(`No exchange rate retrieved for ${symbol}`);
         }
