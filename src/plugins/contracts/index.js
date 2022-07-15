@@ -41,7 +41,7 @@ function createPlugin () {
     return {
       api: {
         refreshContracts: refreshContracts(web3, chainId),
-        createContract: createContract(web3, chainId),
+        createContract: createContract(web3, chainId, plugins),
         cancelContract: cancelContract(web3, chainId)
       },
       events: [

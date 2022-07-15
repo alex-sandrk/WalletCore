@@ -10,6 +10,6 @@
   "symbol": "LMR",
   "useNativeCookieJar": false,
   "web3Timeout": 60000,
-  "wsApiUrl": "wss://ropsten.infura.io/ws/v3/635858abf10e4d579b7ded0a7fb15f91",
+  "wsApiUrl": "wss://ropsten.infura.io/ws/v3/4b68229d56fe496e899f07c3d41cb08a",
   "proxyRouterBaseUrl": "hashrouter.lumerin.io:8080"
 }
