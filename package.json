@@ -1,6 +1,6 @@
 {
   "name": "@lumerin/wallet-core",
-  "version": "1.0.7-beta",
+  "version": "1.0.8",
   "author": {
     "name": "Kodee McIntosh",
     "email": "kodee@lumerin.io",
@@ -28,7 +28,7 @@
     "prepublishOnly": "npm run check"
   },
   "dependencies": {
-    "@lumerin/contracts": "^1.0.5-beta",
+    "@lumerin/contracts": "git+ssh://git@github.com:Lumerin-protocol/ContractsJS.git#1.0.10",
     "axios": "0.21.1",
     "axios-cookiejar-support": "1.0.1",
     "debug": "4.1.1",
