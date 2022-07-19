@@ -1,28 +1,25 @@
 'use strict';
 
 const abi = require('./erc20-abi.json');
+const { Lumerin } = require('@lumerin/contracts');
 
-const transferMetaParser = ({ address, returnValues }) => ({
-  tokens: {
-    [address]: {
-      event: 'Transfer',
-      from: returnValues.from,
-      to: returnValues.to,
-      value: returnValues.value,
-      processing: false
-    }
+const transferMetaParser = ({ returnValues }) => ({
+  token: {
+    event: 'Transfer',
+    from: returnValues.from,
+    to: returnValues.to,
+    value: returnValues.value,
+    processing: false
   }
 });
 
-const approvalMetaParser = ({ address, returnValues }) => ({
-  tokens: {
-    [address]: {
-      event: 'Approval',
-      from: returnValues.owner,
-      to: returnValues.spender,
-      value: returnValues.value,
-      processing: false
-    }
+const approvalMetaParser = ({ returnValues }) => ({
+  token: {
+    event: 'Approval',
+    from: returnValues.owner,
+    to: returnValues.spender,
+    value: returnValues.value,
+    processing: false
   }
 });
 

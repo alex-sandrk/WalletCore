@@ -1,223 +1,180 @@
 'use strict'
 
-const { MerkleTree } = require('merkletreejs');
-const crypto = require('crypto');
-const { utils: { toHex, BN, toBN } } = require('web3')
-// const LumerinContracts = require('metronome-contracts')
+const debug = require('debug')('lmr-wallet:core:contracts:api')
 const LumerinContracts = require('@lumerin/contracts')
 
-// function getContracts (web3, chain) {
-//   const { Lumerin } = new LumerinContracts(web3, chain);
-//   return function (params) {
-//     const {
-//       destinationChain,
-//       destinationLmrAddress,
-//       extraData,
-//       fee,
-//       from,
-//       to,
-//       value
-//     } = params;
+async function _getContractAddresses(web3, chain) {
+  const { CloneFactory } = new LumerinContracts(web3, chain)
 
-//     return Lumerin.methods.export(
-//       toHex(destinationChain),
-//       destinationLmrAddress,
-//       to || from,
-//       value,
-//       fee,
-//       extraData
-//     ).estimateGas({ from });
-//   }
-// }
-
-// function estimateImportLmrGas (web3, chain) {
-//   const { Lumerin } = new LumerinContracts(web3, chain);
-//   return function (params) {
-//     const {
-//       blockTimestamp,
-//       burnSequence,
-//       currentBurnHash,
-//       currentTick,
-//       dailyMintable,
-//       destinationChain,
-//       destinationLmrAddress,
-//       extraData,
-//       fee,
-//       from,
-//       originChain,
-//       previousBurnHash,
-//       supply,
-//       root,
-//       value
-//     } = params;
-
-//     return Lumerin.methods.importLMR(
-//       toHex(originChain),
-//       toHex(destinationChain),
-//       [destinationLmrAddress, from],
-//       extraData,
-//       [previousBurnHash, currentBurnHash],
-//       supply,
-//       [
-//         blockTimestamp,
-//         value,
-//         fee,
-//         currentTick,
-//         dailyMintable,
-//         burnSequence
-//       ],
-//       root
-//     ).estimateGas({ from });
-//   }
-// }
-
-function addAccount (web3, privateKey) {
-  web3.eth.accounts.wallet.create(0)
-    .add(web3.eth.accounts.privateKeyToAccount(privateKey));
-}
-
-const getNextNonce = (web3, from) =>
-  web3.eth.getTransactionCount(from, 'pending')
-
-const getContracts = (web3, chain) => {
-  const { WebFacing } = new LumerinContracts(web3, chain)
-
-  return function() {
-    logTransaction(WebFacing.methods.getListOfContracts());
-  }
-}
-
-function sendLmr (web3, chain, logTransaction, metaParsers) {
-  const { WebFacing } = new LumerinContracts(web3, chain)
-  return function (privateKey, { gasPrice, gas, from, to, value }) {
-    addAccount(web3, privateKey)
-    return getNextNonce(web3, from)
-      .then(nonce =>
-        logTransaction(
-          Lumerin.methods.transfer(to, value)
-            .send({ from, gasPrice, gas, nonce }),
-          from,
-          metaParsers.transfer({
-            address: Lumerin.options.address,
-            returnValues: { _from: from, _to: to, _value: value }
-          })
-        )
+  return await CloneFactory.methods
+    .getContractList()
+    .call()
+    .catch((error) => {
+      debug(
+        'Error when trying get list of contract addresses from CloneFactory contract: ',
+        error
       )
+    })
+}
+
+async function _loadContractInstance(web3, chain, instanceAddress) {
+  const implementationContract = await new web3.eth.Contract(
+    LumerinContracts[chain].Implementation.abi,
+    instanceAddress
+  )
+
+  return await implementationContract.methods
+    .getPublicVariables()
+    .call()
+    .then((contract) => {
+      const {
+        0: state,
+        1: price, // cost to purchase the contract
+        2: limit, // max th provided
+        3: speed, // th/s of contract
+        4: length, // duration of the contract in seconds
+        5: timestamp, // timestamp of the block at moment of purchase
+        6: buyer, // wallet address of the purchasing party
+        7: seller, // wallet address of the selling party
+        8: encryptedPoolData, // encrypted data for pool target info
+      } = contract
+
+      return {
+        id: instanceAddress,
+        price,
+        speed,
+        length,
+        buyer,
+        seller,
+        timestamp,
+        state,
+        encryptedPoolData,
+      }
+    })
+    .catch((error) => {
+      debug(
+        'Error when trying to load Contracts by address in the Implementation contract: ',
+        error
+      )
+    })
+}
+
+async function getActiveContracts(web3, chain) {
+  if (!web3) {
+    debug('Not a valid Web3 instance')
+    return
+  }
+  const addresses = await _getContractAddresses(web3, chain)
+
+  let activeContracts = []
+  for (let i = 0; i < addresses.length; i++) {
+    let inst = await _loadContractInstance(web3, chain, addresses[i])
+    activeContracts.push(inst)
+  }
+
+  return activeContracts
+}
+
+function createContract(web3, chain, plugins) {
+  if (!web3) {
+    debug('Not a valid Web3 instance')
+    return
+  }
+
+  const { CloneFactory } = new LumerinContracts(web3, chain)
+
+  return async function (params) {
+    // const { gasPrice } = await plugins.wallet.getGasPrice()
+    let {
+      price,
+      limit = 0,
+      speed,
+      duration,
+      sellerAddress,
+      validatorAddress = '0x0000000000000000000000000000000000000000',
+      password,
+      privateKey,
+    } = params
+
+    const account = web3.eth.accounts.privateKeyToAccount(privateKey)
+
+    web3.eth.accounts.wallet.create(0).add(account)
+
+    return web3.eth
+      .getTransactionCount(sellerAddress, 'pending')
+      .then((nonce) =>
+        plugins.explorer.logTransaction(
+          CloneFactory.methods
+            .setCreateNewRentalContract(
+              price,
+              limit,
+              speed,
+              duration,
+              validatorAddress,
+              ''
+            )
+            .send(
+              {
+                from: sellerAddress,
+                gas: 500000,
+              },
+              function (data, err) {
+                console.log('error: ', err)
+                console.log('data: ', data)
+              }
+            ),
+          sellerAddress
+        )
+      );
   }
 }
 
-// function exportLmr (web3, chain, logTransaction, metaParsers) {
-//   const { Lumerin } = new LumerinContracts(web3, chain)
-//   return function (privateKey, params) {
-//     const {
-//       destinationChain,
-//       destinationLmrAddress,
-//       extraData,
-//       fee,
-//       from,
-//       gas,
-//       gasPrice,
-//       to,
-//       value
-//     } = params;
-//     addAccount(web3, privateKey);
+// function updateContract(web3, chain) {
+//   if(!web3) {
+//     debug('Not a valid Web3 instance');
+//     return;
+//   }
 
-//     return Promise.all([
-//       getNextNonce(web3, from),
-//       fee || getExportLmrFee(web3, chain)({ value })
-//     ])
-//       .then(([nonce, actualFee]) =>
-//         logTransaction(
-//           Lumerin.methods.export(
-//             toHex(destinationChain),
-//             destinationLmrAddress,
-//             to || from,
-//             value,
-//             actualFee,
-//             extraData
-//           ).send({ from, gasPrice, gas, nonce }),
-//           from,
-//           metaParsers.export({
-//             address: from,
-//             returnValues: {
-//               amountToBurn: value,
-//               destinationChain: toHex(destinationChain),
-//               destinationRecipientAddr: to || from,
-//               fee: actualFee
-//             }
-//           })
-//         )
-//       )
+//   return function(params) {
+//     // const { Implementation } = LumerinContracts(web3, chain)
+//     //   .createContract(LumerinContracts[chain].Implementation.abi, address);
+//     const implementationContract = _loadContractInstance(web3, chain, address);
+//     const isRunning = implementationContract.contractState() === 'Running';
+
+//     if(isRunning) {
+//       debug("Contract is currently in the 'Running' state");
+//       return;
+//     }
+
+//     implementationContract.methods.setUpdatePurchaseInformation()
 //   }
 // }
 
-// function importLmr (web3, chain, logTransaction, metaParsers) {
-//   const { Lumerin } = new LumerinContracts(web3, chain);
-//   return function (privateKey, params) {
-//     const {
-//       blockTimestamp,
-//       burnSequence,
-//       currentBurnHash,
-//       currentTick,
-//       dailyMintable,
-//       destinationChain,
-//       destinationLmrAddress,
-//       extraData,
-//       fee,
-//       from,
-//       gas,
-//       gasPrice,
-//       originChain,
-//       previousBurnHash,
-//       supply,
-//       root,
-//       value
-//     } = params;
-//     addAccount(web3, privateKey);
+function cancelContract(web3, chain) {
+  if (!web3) {
+    debug('Not a valid Web3 instance')
+    return
+  }
 
-//     return Promise.all([
-//       getNextNonce(web3, from)
-//     ])
-//       .then(([nonce]) =>
-//         logTransaction(
-//           Lumerin.methods.importLMR(
-//             toHex(originChain),
-//             toHex(destinationChain),
-//             [destinationLmrAddress, from],
-//             extraData,
-//             [previousBurnHash, currentBurnHash],
-//             supply,
-//             [
-//               blockTimestamp,
-//               value,
-//               fee,
-//               currentTick,
-//               dailyMintable,
-//               burnSequence
-//             ],
-//             root
-//           ).send({ from, gasPrice, gas, nonce }),
-//           from,
-//           metaParsers.importRequest({
-//             returnValues: {
-//               amountToImport: value,
-//               currentBurnHash,
-//               fee,
-//               originChain: toHex(originChain),
-//               destinationRecipientAddr: from
-//             }
-//           })
-//         )
-//       )
-//   }
-// }
+  return function (params) {
+    const { walletAddress, gasLimit = 1000000, contractId: address } = params
+    const implementationContract = _loadContractInstance(web3, chain, address)
+    const isRunning = implementationContract.contractState() === 'Running'
+
+    if (isRunning) {
+      debug("Contract is currently in the 'Running' state")
+      return
+    }
+
+    return implementationContract.methods
+      .setContractCloseOut(3)
+      .send({ from: walletAddress, gas: gasLimit })
+      .then((receipt) => receipt)
+  }
+}
 
 module.exports = {
-  // getExportLmrFee,
-  getMerkleRoot,
-  // estimateExportLmrGas,
-  // estimateImportLmrGas,
-  // exportLmr,
-  // importLmr,
-  sendLmr
+  getActiveContracts,
+  createContract,
+  cancelContract,
 }

@@ -1,58 +1,65 @@
-'use strict';
+'use strict'
 
-const { MerkleTree } = require('merkletreejs');
-const crypto = require('crypto');
-const { utils: { toHex, BN, toBN } } = require('web3')
 const LumerinContracts = require('@lumerin/contracts')
 
-const sha256 = data => crypto.createHash('sha256').update(data).digest();
+const addAccount = (web3, privateKey) =>
+  web3.eth.accounts.wallet
+    .create(0)
+    .add(web3.eth.accounts.privateKeyToAccount(privateKey))
 
-function calcMerkleRoot (hashes) {
-  const leaves = hashes.map(x => Buffer.from(x.slice(2), 'hex'));
-  const tree = new MerkleTree(leaves, sha256);
-
-  return `0x${tree.getRoot().toString('hex')}`;
-}
-
-function getMerkleRoot (web3, chain) {
-  // const { TokenPorter } = new LumerinContracts(web3, chain)
-  return burnSeq =>
-    Promise.all(new Array(16).fill()
-      .map((_, i) => toBN(burnSeq).subn(i))
-      .filter(seq => seq.gten(0))
-      .reverse()
-      // .map(seq => TokenPorter.methods.exportedBurns(seq.toString()).call())
-    )
-      .then(calcMerkleRoot);
-}
-
-const addAccount = (web3, privateKey) => web3.eth.accounts.wallet.create(0)
-  .add(web3.eth.accounts.privateKeyToAccount(privateKey));
-
-const getNextNonce = (web3, from) => web3.eth.getTransactionCount(from, 'pending')
+const getNextNonce = (web3, from) =>
+  web3.eth.getTransactionCount(from, 'pending')
 
 const sendLmr = (web3, chain, logTransaction, metaParsers) => {
-  const { Lumerin } = new LumerinContracts(web3, chain);
+  const { Lumerin } = new LumerinContracts(web3, chain)
 
   return (privateKey, { gasPrice, gas, from, to, value }) => {
-    addAccount(web3, privateKey);
+    addAccount(web3, privateKey)
+    console.log({ gasPrice, gas, from, to, value });
+    const lmrValue = parseFloat(value);
+    const lmrUnits = Math.floor(Number(lmrValue * 10 ** 8)).toString();
+    
+    console.log("lmr units: ", lmrUnits);
 
-    return getNextNonce(web3, from)
-      .then(nonce =>
-        logTransaction(
-          Lumerin.methods.transfer(to, value)
-            .send({ from, gasPrice, gas, nonce }),
-          from,
-          metaParsers.transfer({
-            address: Lumerin.options.address,
-            returnValues: { _from: from, _to: to, _value: value }
-          })
-        )
-      );
-  };
+    // to = '0x146590438A9Ab7F186d9758629Af476b2B962A37'
+    // value = 100 //value needs to be in units of 1x10^8 lumerin
+
+    return getNextNonce(web3, from).then((nonce) =>
+      logTransaction(
+        Lumerin.methods.transfer(to, lmrUnits).send({ from, gas: 999999 }),
+        from,
+        metaParsers.transfer({
+          address: Lumerin.options.address,
+          returnValues: { _from: from, _to: to, _value: lmrUnits },
+        })
+      )
+    )
+  }
+}
+// {
+//   [1]   gasPrice: '1000000000',
+//   [1]   gas: '999999',
+//   [1]   from: '0x7525960Bb65713E0A0e226EF93A19a1440f1116d',
+//   [1]   to: '0x146590438A9Ab7F186d9758629Af476b2B962A37',
+//   [1]   value: '632911392405063'
+//   [1] }
+// Approves claimant contract to transfer LMR tokens on the Lumerin Contract's behalf
+const increaseAllowance = (
+  web3,
+  chain,
+  claimantAddress,
+  lmrAmount,
+  walletAddress,
+  gasLimit = 1000000
+) => {
+  const { Lumerin } = new LumerinContracts(web3, chain)
+
+  return Lumerin.methods
+    .increaseAllowance(claimantAddress, lmrAmount)
+    .send({ from: walletAddress, gas: gasLimit })
 }
 
 module.exports = {
-  getMerkleRoot,
-  sendLmr
-};
+  increaseAllowance,
+  sendLmr,
+}

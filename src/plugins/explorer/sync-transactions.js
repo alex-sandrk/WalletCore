@@ -54,7 +54,6 @@ function createSyncer (config, eventBus, web3, queue, eventsRegistry, indexer) {
         // eslint-disable-next-line promise/catch-or-return
         getTransactions(bestSyncBlock, number, address)
           .then(function (transactions) {
-            console.log({ transactions })
             const { length } = transactions;
             debug(`${length} past ${symbol} transactions retrieved`)
             transactions.forEach(queue.addTransaction(address));
@@ -273,8 +272,8 @@ function createSyncer (config, eventBus, web3, queue, eventsRegistry, indexer) {
 
   const refreshAllTransactions = address =>
     gotBestBlockPromise
-      .then(() =>
-        Promise.all([
+      .then(() => {
+        return Promise.all([
           getPastCoinTransactions(0, bestBlock, address),
           getPastEvents(0, bestBlock, address, function (syncedBlock) { bestBlock = syncedBlock })
         ])
@@ -283,7 +282,7 @@ function createSyncer (config, eventBus, web3, queue, eventsRegistry, indexer) {
 
             return syncedBlock;
           })
-      );
+        });
 
   function stop () {
     subscriptions.forEach(function (subscription) {

@@ -25,12 +25,13 @@ function createPlugin () {
     debug.enabled = config.debug;
 
     const { chainId } = config;
-    const { eth, explorer, tokens } = plugins;
+    const { eth, explorer, token } = plugins;
+    const { Lumerin } = LumerinContracts[chainId];
 
     const web3 = new Web3(eth.web3Provider);
 
     // Register LMR token
-    tokens.registerToken(LumerinContracts[chainId].Lumerin.address, {
+    token.registerToken(Lumerin.address, {
       decimals: 8,
       name: 'Lumerin',
       symbol: 'LMR'
@@ -39,7 +40,7 @@ function createPlugin () {
     // eventBus.on('coin-block', emitLumerinStatus);
 
     // Collect meta parsers
-    const metaParsers = Object.assign(
+    const metaParsers = Object.assign({},
       // {
       //   // auction: auctionEvents.auctionMetaParser,
       //   // converter: converterEvents.converterMetaParser,
@@ -47,7 +48,7 @@ function createPlugin () {
       //   import: porterEvents.importMetaParser,
       //   importRequest: porterEvents.importRequestMetaParser
       // },
-      tokens.metaParsers
+      token.metaParsers
     );
 
     // Build and return API

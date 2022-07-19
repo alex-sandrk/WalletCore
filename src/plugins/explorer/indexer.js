@@ -19,7 +19,7 @@ const pRetry = require('p-retry');
  */
 function createIndexer (config, eventBus) {
   const { chainId, debug: enableDebug, indexerUrl, useNativeCookieJar } = config;
-  const { INDEXER_URL } = process.env;
+  const { WS_INDEXER_URL, HTTP_INDEXER_URL } = process.env;
 
   debug.enabled = enableDebug;
 
@@ -29,12 +29,15 @@ function createIndexer (config, eventBus) {
 
   if (useNativeCookieJar) {
     axios = createAxios({
-      baseURL: INDEXER_URL || indexerUrl
+      baseURL: HTTP_INDEXER_URL || indexerUrl,
+      params: {
+        apikey: '4VPHZ7SNPRRWKE23RBMX1MFUHZYDCAM9A4',
+      }
     });
   } else {
     jar = new CookieJar();
     axios = axiosCookieJarSupport(createAxios(({
-      baseURL: INDEXER_URL || indexerUrl,
+      baseURL: HTTP_INDEXER_URL || indexerUrl,
       withCredentials: true
     })));
     axios.defaults.jar = jar;
@@ -78,10 +81,10 @@ function createIndexer (config, eventBus) {
     );
 
   const getSocket = () =>
-    io(`${INDEXER_URL || indexerUrl}/v1`, {
+    io(WS_INDEXER_URL || indexerUrl, {
       autoConnect: false,
       extraHeaders: jar
-        ? { Cookie: jar.getCookiesSync(INDEXER_URL || indexerUrl).join(';') }
+        ? { Cookie: jar.getCookiesSync(WS_INDEXER_URL || indexerUrl).join(';') }
         : {}
     });
 
@@ -108,9 +111,8 @@ function createIndexer (config, eventBus) {
           eventBus.emit('indexer-connection-status-changed', {
             connected: true
           });
-          socket.emit(
-            'subscribe',
-            { type: 'txs', addresses: [address] },
+          // TODO: Find out why this 'subscribe' event emitter is even here
+          socket.emit('subscribe',{ type: 'txs', address },
             function (err) {
               if (err) {
                 stream.emit('error', err)
