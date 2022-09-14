@@ -46,7 +46,7 @@ function createPlugin () {
       },
       events: [
         'contracts-scan-started',
-        'contracts-scan-finished'
+        'contracts-scan-finished',
       ],
       name: 'contracts'
     };
