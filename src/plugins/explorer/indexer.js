@@ -18,8 +18,8 @@ const pRetry = require('p-retry');
  * @returns {object} The exposed indexer API.
  */
 function createIndexer (config, eventBus) {
-  const { chainId, debug: enableDebug, indexerUrl, useNativeCookieJar } = config;
-  const { WS_INDEXER_URL, HTTP_INDEXER_URL } = process.env;
+  const { chainId, debug: enableDebug, indexerUrl, useNativeCookieJar, wsIndexerUrl } = config;
+  const { HTTP_INDEXER_URL } = process.env;
 
   debug.enabled = enableDebug;
 
@@ -81,10 +81,10 @@ function createIndexer (config, eventBus) {
     );
 
   const getSocket = () =>
-    io(WS_INDEXER_URL || indexerUrl, {
+    io(wsIndexerUrl || indexerUrl, {
       autoConnect: false,
       extraHeaders: jar
-        ? { Cookie: jar.getCookiesSync(WS_INDEXER_URL || indexerUrl).join(';') }
+        ? { Cookie: jar.getCookiesSync(wsIndexerUrl || indexerUrl).join(';') }
         : {}
     });
 
@@ -112,7 +112,7 @@ function createIndexer (config, eventBus) {
             connected: true
           });
           // TODO: Find out why this 'subscribe' event emitter is even here
-          socket.emit('subscribe',{ type: 'txs', address },
+          socket.emit('subscribe', { type: 'txs', addresses: [address] },
             function (err) {
               if (err) {
                 stream.emit('error', err)
@@ -129,14 +129,12 @@ function createIndexer (config, eventBus) {
 
           const { type, txid } = data;
 
-          if (type === 'eth') {
-            if (typeof txid !== 'string' || txid.length !== 66) {
-              stream.emit('error', new Error('Indexer sent bad tx event data'));
-              return;
-            }
-
-            stream.emit('data', txid);
+          if (typeof txid !== 'string' || txid.length !== 66) {
+            stream.emit('error', new Error('Indexer sent bad tx event data'));
+            return;
           }
+
+          stream.emit('data', txid);
         });
 
         socket.on('disconnect', function (reason) {
