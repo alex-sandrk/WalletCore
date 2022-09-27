@@ -22,7 +22,7 @@ function createPlugin () {
     const { eth } = plugins;
     const web3 = new Web3(eth.web3Provider);
 
-    const refreshContracts = (web3, chainId) => {
+    const refreshContracts = (web3, chainId) => () => {
       eventBus.emit('contracts-scan-started', {});
 
       return getActiveContracts(web3, chainId)
@@ -46,7 +46,7 @@ function createPlugin () {
       },
       events: [
         'contracts-scan-started',
-        'contracts-scan-finished'
+        'contracts-scan-finished',
       ],
       name: 'contracts'
     };

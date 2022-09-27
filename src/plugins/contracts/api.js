@@ -18,28 +18,29 @@ async function _getContractAddresses(web3, chain) {
 }
 
 async function _loadContractInstance(web3, chain, instanceAddress) {
-  const implementationContract = await new web3.eth.Contract(
-    LumerinContracts[chain].Implementation.abi,
-    instanceAddress
-  )
+  try {
+    const implementationContract = await new web3.eth.Contract(
+      LumerinContracts[chain].Implementation.abi,
+      instanceAddress
+    )
 
-  return await implementationContract.methods
-    .getPublicVariables()
-    .call()
-    .then((contract) => {
-      const {
-        0: state,
-        1: price, // cost to purchase the contract
-        2: limit, // max th provided
-        3: speed, // th/s of contract
-        4: length, // duration of the contract in seconds
-        5: timestamp, // timestamp of the block at moment of purchase
-        6: buyer, // wallet address of the purchasing party
-        7: seller, // wallet address of the selling party
-        8: encryptedPoolData, // encrypted data for pool target info
-      } = contract
+    const contract = await implementationContract.methods
+      .getPublicVariables()
+      .call()
+    const {
+      0: state,
+      1: price, // cost to purchase the contract
+      2: limit, // max th provided
+      3: speed, // th/s of contract
+      4: length, // duration of the contract in seconds
+      5: timestamp, // timestamp of the block at moment of purchase
+      6: buyer, // wallet address of the purchasing party
+      7: seller, // wallet address of the selling party
+      8: encryptedPoolData, // encrypted data for pool target info
+    } = contract
 
-      return {
+    return {
+      data: {
         id: instanceAddress,
         price,
         speed,
@@ -49,14 +50,16 @@ async function _loadContractInstance(web3, chain, instanceAddress) {
         timestamp,
         state,
         encryptedPoolData,
-      }
-    })
-    .catch((error) => {
-      debug(
-        'Error when trying to load Contracts by address in the Implementation contract: ',
-        error
-      )
-    })
+        limit,
+      },
+      instance: implementationContract,
+    }
+  } catch (err) {
+    debug(
+      'Error when trying to load Contracts by address in the Implementation contract: ',
+      error
+    )
+  }
 }
 
 async function getActiveContracts(web3, chain) {
@@ -65,11 +68,17 @@ async function getActiveContracts(web3, chain) {
     return
   }
   const addresses = await _getContractAddresses(web3, chain)
+  const { Lumerin } = new LumerinContracts(web3, chain)
 
   let activeContracts = []
   for (let i = 0; i < addresses.length; i++) {
-    let inst = await _loadContractInstance(web3, chain, addresses[i])
-    activeContracts.push(inst)
+    const contract = await _loadContractInstance(web3, chain, addresses[i])
+    const balance = await Lumerin.methods.balanceOf(contract.data.id).call()
+
+    activeContracts.push({
+      ...contract.data,
+      balance,
+    })
   }
 
   return activeContracts
@@ -156,20 +165,30 @@ function cancelContract(web3, chain) {
     return
   }
 
-  return function (params) {
-    const { walletAddress, gasLimit = 1000000, contractId: address } = params
-    const implementationContract = _loadContractInstance(web3, chain, address)
-    const isRunning = implementationContract.contractState() === 'Running'
+  return async function (params) {
+    const { walletAddress, gasLimit = 1000000, contractId, privateKey, closeOutType } = params
+
+    const account = web3.eth.accounts.privateKeyToAccount(privateKey)
+    web3.eth.accounts.wallet.create(0).add(account)
+
+    const implementationContract = await _loadContractInstance(
+      web3,
+      chain,
+      contractId
+    )
+    const isRunning = implementationContract.data.state === '1'
 
     if (isRunning) {
       debug("Contract is currently in the 'Running' state")
       return
     }
 
-    return implementationContract.methods
-      .setContractCloseOut(3)
-      .send({ from: walletAddress, gas: gasLimit })
-      .then((receipt) => receipt)
+    return implementationContract.instance.methods
+      .setContractCloseOut(closeOutType)
+      .send({
+        from: walletAddress,
+        gas: gasLimit,
+    });
   }
 }
 
