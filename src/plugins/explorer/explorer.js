@@ -46,13 +46,6 @@ class Explorer {
     return result.map((transaction) => transaction.hash)
   }
 
-  #mapListResponse(res) {
-    if (res.status !== '1' && res.message !== 'No transactions found') {
-      throw new Error(res.result)
-    }
-    return res.result.map((transaction) => transaction.hash)
-  }
-
   /**
    * Create a stream that will emit an event each time a transaction for the
    * specified address is indexed.
