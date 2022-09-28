@@ -4,6 +4,7 @@ const { debounce, groupBy, merge, noop, reduce } = require('lodash');
 const debug = require('debug')('lmr-wallet:core:explorer:queue');
 const getTransactionStatus = require('./transaction-status');
 const promiseAllProps = require('promise-all-props');
+const LumerinContracts = require('@lumerin/contracts')
 
 function createQueue (config, eventBus, web3) {
   debug.enabled = config.debug;
@@ -31,17 +32,33 @@ function createQueue (config, eventBus, web3) {
     return { transaction, receipt, meta };
   }
 
+  function decodeInput({ transaction, receipt, meta }) {
+    if (typeof transaction.input === 'string') {
+      const { Lumerin } = LumerinContracts[config.chainId]
+      const decoded = web3.eth.abi.decodeParameters(
+        Lumerin.abi.find((a) => a.name === 'transfer').inputs,
+        transaction.input.slice(10)
+      )
+
+      transaction.input = decoded
+      return { transaction, receipt, meta }
+    }
+    return { transaction, receipt, meta }
+  }
+
   function emitTransactions (address, transactions) {
     eventBus.emit('wallet-transactions-changed', {
       transactions: transactions
         .filter(data => !!data.transaction)
         .map(fillInStatus)
+        .map(decodeInput)
     });
 
     eventBus.emit('token-transactions-changed', {
       transactions: transactions
         .filter(data => !!data.transaction)
-        .map(fillInStatus),
+        .map(fillInStatus)
+        .map(decodeInput)
     });
 
     Promise.all([
