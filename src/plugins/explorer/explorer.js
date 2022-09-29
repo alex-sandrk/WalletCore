@@ -73,6 +73,9 @@ class Explorer {
         const { transactionHash } = data
         stream.emit('data', transactionHash)
       })
+      .on('error', (err) => {
+        stream.emit('error', err);
+      })
     return stream
   }
 
