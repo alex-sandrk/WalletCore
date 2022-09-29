@@ -10,7 +10,7 @@ const createStream = require('./blocks-stream');
 const createTransactionSyncer = require('./sync-transactions');
 const refreshTransaction = require('./refresh-transactions');
 const tryParseEventLog = require('./parse-log');
-const Explorer = require('./explorer');
+const createExplorer = require('./explorer');
 
 function createPlugin () {
   let blocksStream;
@@ -24,7 +24,7 @@ function createPlugin () {
     const eventsRegistry = createEventsRegistry();
     const queue = createQueue(config, eventBus, web3);
 
-    const explorer = new Explorer({ chainId: config.chainId, web3 });
+    const explorer = createExplorer(config.chainId, web3);
 
     syncer = createTransactionSyncer(
       config,

@@ -4,35 +4,41 @@ const axios = require('axios')
 const EventEmitter = require('events')
 const LumerinContracts = require('@lumerin/contracts')
 
+const createExplorer = (chainId, web3) => {
+  let baseURL;
+  switch (chainId.toString()) {
+    case 'mainnet':
+    case '1':
+      baseURL = 'https://api.etherscan.io/api'
+      break
+    case 'ropsten':
+    case '3':
+      baseURL = 'https://api-ropsten.etherscan.io/api'
+      break
+    default:
+      throw new Error(`Unsupported chain ${chainId}`)
+  }
+  const api = axios.create({
+    baseURL,
+  });
+  const { Lumerin } = LumerinContracts[chainId];
+
+  return new Explorer({ api, Lumerin, web3 });
+}
+
 class Explorer {
-  constructor({ chainId, web3 }) {
-    switch (chainId.toString()) {
-      case 'mainnet':
-      case '1':
-        this.apiUrl = 'https://api.etherscan.io/api'
-        break
-      case 'ropsten':
-      case '3':
-        this.apiUrl = 'https://api-ropsten.etherscan.io/api'
-        break
-      default:
-        throw new Error(`Unsupported chain ${chainId}`)
-    }
-    this.api = axios.create({
-      baseURL: this.apiUrl,
-    })
-    this.chainId = chainId
-    this.web3 = web3
+  constructor({ api, Lumerin, web3 }) {
+    this.api = api;
+    this.Lumerin = Lumerin;
+    this.web3 = web3;
   }
 
   async getTransactions(from, to, address) {
-    const { Lumerin } = LumerinContracts[this.chainId]
-
     const params = {
       module: 'account',
       action: 'tokentx',
       sort: 'desc',
-      contractaddress: Lumerin.address,
+      contractaddress: this.Lumerin.address,
       startBlock: from,
       endBlock: to,
       address,
@@ -56,12 +62,10 @@ class Explorer {
    * @param {string} address The address.
    * @returns {object} The event emitter.
    */
-  getTransactionStream(address) {
+  getTransactionStream = (address) => {
     const stream = new EventEmitter()
 
-    const { Lumerin } = LumerinContracts[this.chainId]
-
-    const contract = new this.web3.eth.Contract(Lumerin.abi, Lumerin.address)
+    const contract = new this.web3.eth.Contract(this.Lumerin.abi, this.Lumerin.address)
 
     contract.events
       .Transfer({
@@ -74,13 +78,13 @@ class Explorer {
         stream.emit('data', transactionHash)
       })
       .on('error', (err) => {
-        stream.emit('error', err);
+        stream.emit('error', err)
       })
     return stream
   }
 
   getLatestBlock() {
-    return this.web3.eth.getBlock('latest').then(function (block) {
+    return this.web3.eth.getBlock('latest').then((block) => {
       return {
         number: block.number,
         hash: block.hash,
@@ -90,4 +94,4 @@ class Explorer {
   }
 }
 
-module.exports = Explorer
+module.exports = createExplorer
