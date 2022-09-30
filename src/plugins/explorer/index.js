@@ -4,17 +4,16 @@ const debug = require('debug')('lmr-wallet:core:explorer');
 const Web3 = require('web3');
 
 const createEventsRegistry = require('./events');
-const createIndexer = require('./indexer');
 const createLogTransaction = require('./log-transaction');
 const createQueue = require('./queue');
 const createStream = require('./blocks-stream');
 const createTransactionSyncer = require('./sync-transactions');
 const refreshTransaction = require('./refresh-transactions');
 const tryParseEventLog = require('./parse-log');
+const createExplorer = require('./explorer');
 
 function createPlugin () {
   let blocksStream;
-  let indexer;
   let syncer;
 
   function start ({ config, eventBus, plugins }) {
@@ -25,7 +24,7 @@ function createPlugin () {
     const eventsRegistry = createEventsRegistry();
     const queue = createQueue(config, eventBus, web3);
 
-    indexer = createIndexer(config, eventBus);
+    const explorer = createExplorer(config.chainId, web3);
 
     syncer = createTransactionSyncer(
       config,
@@ -33,7 +32,7 @@ function createPlugin () {
       web3,
       queue,
       eventsRegistry,
-      indexer
+      explorer
     );
 
     debug('Initiating blocks stream');
@@ -75,7 +74,6 @@ function createPlugin () {
   function stop () {
     // blocksStream.destroy();
     blocksStream.unsubscribe();
-    indexer.disconnect();
     syncer.stop();
   }
 

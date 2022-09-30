@@ -20,8 +20,6 @@ function createSyncer (config, eventBus, web3, queue, eventsRegistry, indexer) {
     });
   })
 
-  const { getTransactions, getTransactionStream } = indexer;
-
   function subscribeCoinTransactions (fromBlock, address) {
     let shallResync = false;
     let resyncing = false;
@@ -29,7 +27,7 @@ function createSyncer (config, eventBus, web3, queue, eventsRegistry, indexer) {
 
     const { symbol, displayName } = config;
 
-    getTransactionStream(address)
+    indexer.getTransactionStream(address)
       .on('data', queue.addTransaction(address))
       .on('resync', function () {
         debug(`Shall resync ${symbol} transactions on next block`)
@@ -52,7 +50,7 @@ function createSyncer (config, eventBus, web3, queue, eventsRegistry, indexer) {
         resyncing = true;
         shallResync = false;
         // eslint-disable-next-line promise/catch-or-return
-        getTransactions(bestSyncBlock, number, address)
+        indexer.getTransactions(bestSyncBlock, number, address)
           .then(function (transactions) {
             const { length } = transactions;
             debug(`${length} past ${symbol} transactions retrieved`)
@@ -80,7 +78,7 @@ function createSyncer (config, eventBus, web3, queue, eventsRegistry, indexer) {
   function getPastCoinTransactions (fromBlock, toBlock, address) {
     const { symbol } = config;
 
-    return getTransactions(fromBlock, toBlock, address)
+    return indexer.getTransactions(fromBlock, toBlock, address)
       .then(function (transactions) {
         debug(`${transactions.length} past ${symbol} transactions retrieved`);
         return Promise.all(transactions.map(queue.addTransaction(address)))
