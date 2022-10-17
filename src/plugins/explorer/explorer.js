@@ -12,7 +12,7 @@ const createExplorer = (chainId, web3) => {
       baseURL = 'https://api.etherscan.io/api'
       break
     case 'goerli':
-    case '420':
+    case '5':
       baseURL = 'https://api-goerli.etherscan.io/api'
       break
     default:
