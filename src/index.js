@@ -14,7 +14,8 @@ const pluginCreators = [
   require('./plugins/token'),
   require('./plugins/lumerin'),
   require('./plugins/proxy-router'),
-  require('./plugins/contracts')
+  require('./plugins/contracts'),
+  require('./plugins/devices'),
 ];
 
 function createCore () {
