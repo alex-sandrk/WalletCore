@@ -36,7 +36,7 @@ class CGMinerApi {
    * @returns {Promise<void>}
    */
   async reconnect() {
-    this.socket = new Socket()
+    this.socket = new Socket({ allowHalfOpen: true })
     return this.connect(this._data)
   }
 
