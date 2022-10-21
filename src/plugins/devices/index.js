@@ -56,11 +56,22 @@ function createPlugin() {
           eventBus.emit(EVENT_DEVICES_STATE_UPDATED, { isDiscovering })
         },
         setMinerPool: async (data) => {
-          const { host, pool } = data;
+          const { host, pool } = data
           eventBus.emit(EVENT_DEVICES_DEVICE_UPDATED, { isDone: false, host })
-  
+
           setPool(host, pool, abort.signal, (update) => {
             eventBus.emit(EVENT_DEVICES_DEVICE_UPDATED, update)
+          }).catch((err) => {
+            debug('Set pool error:', err)
+            eventBus.emit('wallet-error', {
+              inner: err,
+              message: `Failed to update miner configuration: ${host}`,
+              meta: { plugin: 'devices' },
+            })
+            eventBus.emit(EVENT_DEVICES_DEVICE_UPDATED, {
+              host,
+              isDone: true,
+            })
           })
         },
       },

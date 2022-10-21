@@ -14,7 +14,7 @@ class ConfigurationStrategyInterface {
    *
    * @param {String} pool
    * @param {String} poolUser
-   * @returns {Promise<boolean>} Returns true if successfully updated configuration
+   * @returns {Promise<void>} Returns true if successfully updated configuration
    */
   async setPool(pool, poolUser) {
     throw new Error('Not implemented')

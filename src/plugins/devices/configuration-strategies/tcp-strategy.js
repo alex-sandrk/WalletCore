@@ -27,30 +27,21 @@ class TcpConfigurationStrategy {
    *
    * @param {String} pool
    * @param {String} poolUser
-   * @returns {Promise<boolean>} Returns true if successfully updated configuration
+   * @returns {Promise<void>} Returns true if successfully updated configuration
    */
   async setPool(pool, poolUser) {
     try {
       const api = new CGMinerApi()
       await api.connect({ host: this.host, abort: this.abort })
 
-      const result = await api.addPool(pool, poolUser)
-      const status = result.STATUS[0].STATUS
-      if (status !== Status.Success) {
-        return false
-      }
+      const { id } = await api.addPool(pool, poolUser)
       if (!api.isSocketOpen()) {
         await api.reconnect()
       }
-      const { id } = result
-      const data = await api.switchPool(id)
-      if (data.STATUS[0].STATUS !== Status.Success) {
-        return false
-      }
-      return true
+      await api.switchPool(id)
+      return
     } catch (err) {
-      console.log(err)
-      return false
+      throw err;
     }
   }
 }

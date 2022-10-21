@@ -8,7 +8,7 @@ class ConfigurationStrategyFactory {
   /**
    * @param {String} host Miner's IP address
    * @param {AbortSignal} abort 
-   * @returns {Promise<ConfigurationStrategyInterface>}
+   * @returns {Promise<ConfigurationStrategyInterface|null>}
    */
   static async createStrategy(host, abort) {
     const strategies = [TcpConfigurationStrategy, AntMinerStrategy]

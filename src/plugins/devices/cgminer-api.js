@@ -143,7 +143,7 @@ class CGMinerApi {
 
   /**
    *  Adds new pool to the miner configuration
-   * @returns {Promise<any>}
+   * @returns {Promise<{ id: string }>} Returns object with id of added pool
    */
   async addPool(pool, poolUser, password) {
     try {
@@ -154,15 +154,20 @@ class CGMinerApi {
         },
         AbortController.timeout(CGMINER_API_REQUEST_TIMEOUT)
       )
-      return data
+      if (!data || data.STATUS[0].STATUS !== Status.Success) {
+        throw new Error(`Cannot add new pool: ${JSON.stringify(data)}`)
+      }
+      return {
+        id: data.id,
+      }
     } catch (err) {
-      console.log(err)
+      throw err
     }
   }
 
   /**
    *   Switching pool N to the highest priority (the pool is also enabled)
-   * @returns {Promise<any>}
+   * @returns {Promise<void>}
    */
   async switchPool(n) {
     try {
@@ -173,9 +178,12 @@ class CGMinerApi {
         },
         AbortController.timeout(CGMINER_API_REQUEST_TIMEOUT)
       )
-      return data
+      if (!data || data.STATUS[0].STATUS !== Status.Success) {
+        throw new Error(`Cannot switch ${n} pool to the highest priority: ${JSON.stringify(data)}`)
+      }
+      return
     } catch (err) {
-      console.log(err)
+      throw err
     }
   }
 

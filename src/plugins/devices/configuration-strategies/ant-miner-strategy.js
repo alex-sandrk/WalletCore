@@ -26,18 +26,17 @@ class AntMinerStrategy {
    *
    * @param {String} pool
    * @param {String} poolUser
-   * @returns {Promise<boolean>} Returns true if successfully updated configuration
+   * @returns {Promise<void>}
    */
   async setPool(pool, poolUser) {
-    if (!this.api) {
-      console.log('Should not be called, no api available')
-      return false
-    }
-    const config = await this.#getCurrentConfig()
-    if (!config) {
-      return false
-    }
     try {
+      if (!this.api) {
+        throw new Error('No api available')
+      }
+      const config = await this.#getCurrentConfig()
+      if (!config) {
+        throw new Error('Cannot fetch current configuragion')
+      }
       const result = await this.api.request({
         url: `http://${this.host}/cgi-bin/set_miner_conf.cgi`,
         method: 'POST',
@@ -49,10 +48,14 @@ class AntMinerStrategy {
           _ant_pool1pw: '123',
         }),
       })
-      return result.status === 200
+      if (result.status !== 200) {
+        throw new Error(
+          `Request failed with status: ${result.status}, data: ${result.data}`
+        )
+      }
+      return
     } catch (err) {
-      console.log(err, 'ERROR')
-      return false
+      throw err;
     }
   }
 
