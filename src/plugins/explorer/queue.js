@@ -4,17 +4,7 @@ const { debounce, groupBy, merge, noop, reduce } = require('lodash')
 const debug = require('debug')('lmr-wallet:core:explorer:queue')
 const getTransactionStatus = require('./transaction-status')
 const promiseAllProps = require('promise-all-props')
-
-const erc20TransferABI = [
-  {
-    name: 'to',
-    type: 'address',
-  },
-  {
-    name: 'amount',
-    type: 'uint256',
-  },
-]
+const abi = require('../token/erc20-abi.json');
 
 function createQueue(config, eventBus, web3) {
   debug.enabled = config.debug
@@ -45,11 +35,15 @@ function createQueue(config, eventBus, web3) {
   function decodeInput({ transaction, receipt, meta }) {
     if (typeof transaction.input === 'string') {
       const decoded = web3.eth.abi.decodeParameters(
-        erc20TransferABI,
+        abi.find(a => a.name === 'transfer').inputs,
         transaction.input.slice(10)
       )
-
-      transaction.input = decoded
+      const to = decoded['0'];
+      const amount = decoded['1']
+      transaction.input = {
+        to,
+        amount
+      }
       return { transaction, receipt, meta }
     }
     return { transaction, receipt, meta }
