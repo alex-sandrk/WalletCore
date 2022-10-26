@@ -16,7 +16,7 @@ const pRetry = require('p-retry');
  * @returns {object} The exposed indexer API.
  */
 function createConnectionsManager (config, eventBus) {
-  const { debug: enableDebug, useNativeCookieJar, proxyRouterBaseUrl } = config;
+  const { debug: enableDebug, useNativeCookieJar, proxyRouterUrl } = config;
 
   debug.enabled = enableDebug;
 
@@ -26,12 +26,12 @@ function createConnectionsManager (config, eventBus) {
 
   if (useNativeCookieJar) {
     axios = createAxios({
-      baseURL: "http://" + proxyRouterBaseUrl
+      baseURL: "http://" + proxyRouterUrl
     });
   } else {
     jar = new CookieJar();
     axios = axiosCookieJarSupport(createAxios(({
-      baseURL: "http://" + proxyRouterBaseUrl,
+      baseURL: "http://" + proxyRouterUrl,
       withCredentials: true
     })));
     axios.defaults.jar = jar;
@@ -41,10 +41,10 @@ function createConnectionsManager (config, eventBus) {
     axios("/connections")
       .then(res => res.data);
 
-  const getSocket = () => io("ws://" + proxyRouterBaseUrl + "/ws", {
+  const getSocket = () => io("ws://" + proxyRouterUrl + "/ws", {
       autoConnect: true,
       extraHeaders: jar
-        ? { Cookie: jar.getCookiesSync("ws://" + proxyRouterBaseUrl + "/ws").join(';') }
+        ? { Cookie: jar.getCookiesSync("ws://" + proxyRouterUrl + "/ws").join(';') }
         : {}
     });
 
@@ -62,7 +62,7 @@ function createConnectionsManager (config, eventBus) {
       {
         forever: true,
         onFailedAttempt (err) {
-          debug('Failed to get connections stream cookie', err)
+          // debug('Failed to get connections stream cookie', err)
         }
       }
     );
