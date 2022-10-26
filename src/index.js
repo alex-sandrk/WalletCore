@@ -4,8 +4,6 @@ const { merge, union } = require('lodash');
 const debug = require('debug')('lmr-wallet:core');
 const EventEmitter = require('events');
 
-const defaultConfig = require('./defaultConfig');
-
 const pluginCreators = [
   require('./plugins/rates'),
   require('./plugins/eth'),
@@ -14,7 +12,8 @@ const pluginCreators = [
   require('./plugins/token'),
   require('./plugins/lumerin'),
   require('./plugins/proxy-router'),
-  require('./plugins/contracts')
+  require('./plugins/contracts'),
+  require('./plugins/devices'),
 ];
 
 function createCore () {
@@ -27,7 +26,7 @@ function createCore () {
       throw new Error('Wallet Core already initialized');
     }
 
-    const config = merge({}, defaultConfig, givenConfig);
+    const config = merge({}, givenConfig);
 
     eventBus = new EventEmitter();
 
