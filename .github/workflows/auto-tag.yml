@@ -11,5 +11,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: butlerlogic/action-autotag@stable
-      with:
+      env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      with:
+        strategy: package
